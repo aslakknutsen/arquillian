@@ -34,17 +34,17 @@ public class JCloudsConfiguration // extends ExtensionConfiguration  ARQ-215
    /**
     * The Account name to use for this provider. 
     */
-   private String identity;
+   private String account;
    
    /**
-    * The Accounts credential.
+    * The Accounts key.
     */
-   private String credential;
+   private String key;
 
    /**
     * The name of the nodes to start
     */
-   private String tag = UUID.randomUUID().toString().replaceAll("-", "");
+   private String tag = UUID.randomUUID().toString();
    
    /**
     * The number of nodes to start
@@ -62,44 +62,41 @@ public class JCloudsConfiguration // extends ExtensionConfiguration  ARQ-215
    /**
     * @param provider the provider to set
     */
-   public JCloudsConfiguration setProvider(String provider)
+   public void setProvider(String provider)
    {
       this.provider = provider;
-      return this;
    }
    
    /**
     * @return the account
     */
-   public String getIdentity()
+   public String getAccount()
    {
-      return identity;
+      return account;
    }
    
    /**
     * @param account the account to set
     */
-   public JCloudsConfiguration setIdentity(String account)
+   public void setAccount(String account)
    {
-      this.identity = account;
-      return this;
+      this.account = account;
    }
    
    /**
-    * @return the credential
+    * @return the key
     */
-   public String getCredential()
+   public String getKey()
    {
-      return credential;
+      return key;
    }
    
    /**
-    * @param credential the credential to set
+    * @param key the key to set
     */
-   public JCloudsConfiguration setCredential(String credential)
+   public void setKey(String key)
    {
-      this.credential = credential;
-      return this;
+      this.key = key;
    }
    
    /**
@@ -113,10 +110,9 @@ public class JCloudsConfiguration // extends ExtensionConfiguration  ARQ-215
    /**
     * @param tag the tag to set
     */
-   public JCloudsConfiguration setTag(String tag)
+   public void setTag(String tag)
    {
       this.tag = tag;
-      return this;
    }
    
    /**
@@ -130,9 +126,8 @@ public class JCloudsConfiguration // extends ExtensionConfiguration  ARQ-215
    /**
     * @param nodeCount the nodeCount to set
     */
-   public JCloudsConfiguration setNodeCount(Integer nodeCount)
+   public void setNodeCount(Integer nodeCount)
    {
       this.nodeCount = nodeCount;
-      return this;
    }
 }
