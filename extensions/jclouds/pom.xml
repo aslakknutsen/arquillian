@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+	<!-- Parent -->
+	<parent>
+		<groupId>org.jboss.arquillian</groupId>
+		<artifactId>arquillian-build</artifactId>
+		<version>1.0.0-SNAPSHOT</version>
+		<relativePath>../../build/pom.xml</relativePath>
+	</parent>
+
+	<!-- Model Version -->
+	<modelVersion>4.0.0</modelVersion>
+
+	<!-- Artifact Configuration -->
+	<groupId>org.jboss.arquillian.extension</groupId>
+	<artifactId>arquillian-jclouds</artifactId>
+	<name>Arquillian Extension JClouds</name>
+	<description>Extension to add Clouds related capabilities to Arquillian</description>
+
+
+	<!-- Properties -->
+	<properties>
+
+		<!-- Versioning -->
+		<version.jclouds_core>1.0-beta-6</version.jclouds_core>
+		<version.jboss_60>6.0.0.20100721-M4</version.jboss_60>
+		<version.jboss_51>5.1.0.GA</version.jboss_51>
+
+	</properties>
+
+	<repositories>
+		<repository>
+			<id>jclouds</id>
+			<url>http://jclouds.googlecode.com/svn/repo</url>
+		</repository>
+	</repositories>
+
+	<profiles>
+		<profile>
+			<id>jbossas-remote-5.1</id>
+			<dependencies>
+				<dependency>
+					<groupId>org.jboss.arquillian.container</groupId>
+					<artifactId>arquillian-jbossas-remote-5.1</artifactId>
+					<version>${project.version}</version>
+				</dependency>
+				<dependency>
+					<groupId>org.jboss.jbossas</groupId>
+					<artifactId>jboss-as-client</artifactId>
+					<version>${version.jboss_51}</version>
+					<type>pom</type>
+				</dependency>
+			</dependencies>
+		</profile>
+		<profile>
+			<id>jbossas-remote-6</id>
+			<dependencies>
+				<dependency>
+					<groupId>org.jboss.arquillian.container</groupId>
+					<artifactId>arquillian-jbossas-remote-6</artifactId>
+					<version>${project.version}</version>
+				</dependency>
+				<dependency>
+					<groupId>org.jboss.jbossas</groupId>
+					<artifactId>jboss-as-client</artifactId>
+					<version>${version.jboss_60}</version>
+					<type>pom</type>
+				</dependency>
+			</dependencies>
+		</profile>
+	</profiles>
+
+	<!-- Dependencies -->
+	<dependencies>
+		<dependency>
+			<groupId>org.jboss.arquillian</groupId>
+			<artifactId>arquillian-spi</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.jclouds</groupId>
+			<artifactId>jclouds-compute</artifactId>
+			<version>${version.jclouds_core}</version>
+			<scope>provided</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.jclouds</groupId>
+			<artifactId>jclouds-bluelock</artifactId>
+			<version>${version.jclouds_core}</version>
+			<scope>provided</scope>
+		</dependency>
+
+		<!-- Needed for CDI Enricher packaging, arquillian bug -->
+		<dependency>
+			<groupId>javax.enterprise</groupId>
+			<artifactId>cdi-api</artifactId>
+			<version>1.0-SP1</version>
+			<scope>provided</scope>
+		</dependency>
+
+
+		<!-- Test -->
+		<dependency>
+			<groupId>org.jboss.arquillian</groupId>
+			<artifactId>arquillian-junit</artifactId>
+			<version>${project.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<executions>
+					<execution>
+						<goals>
+							<goal>test-jar</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+</project>
