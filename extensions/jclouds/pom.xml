@@ -24,7 +24,7 @@
 	<properties>
 
 		<!-- Versioning -->
-		<version.jclouds_core>1.0-beta-6</version.jclouds_core>
+		<version.jclouds_core>1.0-SNAPSHOT</version.jclouds_core>
 		<version.jboss_60>6.0.0.20100721-M4</version.jboss_60>
 		<version.jboss_51>5.1.0.GA</version.jboss_51>
 
@@ -34,6 +34,11 @@
 		<repository>
 			<id>jclouds</id>
 			<url>http://jclouds.googlecode.com/svn/repo</url>
+		</repository>
+		<repository>
+			<id>jclouds-snapshots</id>
+			<url>https://oss.sonatype.org/content/repositories/snapshots</url>
+			<snapshots><enabled>true</enabled></snapshots>
 		</repository>
 	</repositories>
 
@@ -86,6 +91,26 @@
 			<version>${version.jclouds_core}</version>
 			<scope>provided</scope>
 		</dependency>
+		<dependency>
+			<groupId>org.jclouds</groupId>
+			<artifactId>jclouds-log4j</artifactId>
+			<version>${version.jclouds_core}</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.jclouds</groupId>
+			<artifactId>jclouds-jsch</artifactId>
+			<version>${version.jclouds_core}</version>
+			<scope>provided</scope>
+		</dependency>
+		
+		<dependency>
+			<groupId>log4j</groupId>
+			<artifactId>log4j</artifactId>
+			<version>1.2.14</version>
+			<scope>provided</scope>
+		</dependency>
+		
 
 		<dependency>
 			<groupId>org.jclouds</groupId>
@@ -108,6 +133,11 @@
 			<groupId>org.jboss.arquillian</groupId>
 			<artifactId>arquillian-junit</artifactId>
 			<version>${project.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.mockito</groupId>
+			<artifactId>mockito-all</artifactId>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
