@@ -44,7 +44,7 @@ public class JCloudsConfiguration // extends ExtensionConfiguration  ARQ-215
    /**
     * The name of the nodes to start
     */
-   private String tag = UUID.randomUUID().toString();
+   private String tag = UUID.randomUUID().toString().replaceAll("-", "");
    
    /**
     * The number of nodes to start
@@ -62,9 +62,10 @@ public class JCloudsConfiguration // extends ExtensionConfiguration  ARQ-215
    /**
     * @param provider the provider to set
     */
-   public void setProvider(String provider)
+   public JCloudsConfiguration setProvider(String provider)
    {
       this.provider = provider;
+      return this;
    }
    
    /**
@@ -78,9 +79,10 @@ public class JCloudsConfiguration // extends ExtensionConfiguration  ARQ-215
    /**
     * @param account the account to set
     */
-   public void setAccount(String account)
+   public JCloudsConfiguration setAccount(String account)
    {
       this.account = account;
+      return this;
    }
    
    /**
@@ -94,9 +96,10 @@ public class JCloudsConfiguration // extends ExtensionConfiguration  ARQ-215
    /**
     * @param key the key to set
     */
-   public void setKey(String key)
+   public JCloudsConfiguration setKey(String key)
    {
       this.key = key;
+      return this;
    }
    
    /**
@@ -110,9 +113,10 @@ public class JCloudsConfiguration // extends ExtensionConfiguration  ARQ-215
    /**
     * @param tag the tag to set
     */
-   public void setTag(String tag)
+   public JCloudsConfiguration setTag(String tag)
    {
       this.tag = tag;
+      return this;
    }
    
    /**
@@ -126,8 +130,9 @@ public class JCloudsConfiguration // extends ExtensionConfiguration  ARQ-215
    /**
     * @param nodeCount the nodeCount to set
     */
-   public void setNodeCount(Integer nodeCount)
+   public JCloudsConfiguration setNodeCount(Integer nodeCount)
    {
       this.nodeCount = nodeCount;
+      return this;
    }
 }
