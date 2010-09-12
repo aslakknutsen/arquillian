@@ -16,11 +16,14 @@
  */
 package org.jboss.arquillian.extension.jclouds;
 
+import org.jboss.arquillian.extension.jclouds.event.AfterStop;
+import org.jboss.arquillian.extension.jclouds.event.BeforeStop;
 import org.jboss.arquillian.spi.Context;
 import org.jboss.arquillian.spi.event.Event;
 import org.jboss.arquillian.spi.event.suite.EventHandler;
 import org.jclouds.compute.ComputeService;
 import org.jclouds.compute.ComputeServiceContext;
+import org.jclouds.compute.predicates.NodePredicates;
 
 /**
  * CloudStopper
@@ -38,19 +41,27 @@ public class CloudStopper implements EventHandler<Event>
    {
       // Currently unsupported for Extensions to have their own configuration based on arquillian.xml ARQ-215
       JCloudsConfiguration config = null; //context.get(Configuration.class).getExtensionConfig(JCloudsConfiguraiton.class); 
+      if(config == null)
+      {
+         config = context.get(JCloudsConfiguration.class);
+      }
 
       ComputeServiceContext computeContext = context.get(ComputeServiceContext.class);
       if(computeContext == null)
       {
          throw new IllegalStateException(ComputeServiceContext.class.getName() + " could not be found in Context.");
       }
-      ComputeService computeService = context.get(ComputeService.class);
-      if(computeService == null)
-      {
-         throw new IllegalStateException(ComputeService.class.getName() + " could not be found in Context.");
-      }
+      ComputeService computeService = computeContext.getComputeService();
       
-      computeService.destroyNode(config.getTag());
-      computeContext.close();
+      try
+      {
+         context.fire(new BeforeStop());
+         computeService.destroyNodesMatching(NodePredicates.withTag(config.getTag()));
+         context.fire(new AfterStop());
+      }
+      finally
+      {
+         computeContext.close();
+      }
    }
 }
