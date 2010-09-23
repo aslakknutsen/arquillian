@@ -38,12 +38,12 @@ public class JCloudsConfiguration implements ContainerConfiguration
    /**
     * The Account name to use for this provider. 
     */
-   private String account;
+   private String identity;
    
    /**
-    * The Accounts key.
+    * The Accounts credential.
     */
-   private String key;
+   private String credential;
 
    /**
     * The name of the nodes to start
@@ -86,36 +86,36 @@ public class JCloudsConfiguration implements ContainerConfiguration
    }
    
    /**
-    * @return the account
+    * @return the identity
     */
-   public String getAccount()
+   public String getIdentity()
    {
-      return account;
+      return identity;
    }
    
    /**
-    * @param account the account to set
+    * @param identity the identity to set
     */
-   public JCloudsConfiguration setAccount(String account)
+   public JCloudsConfiguration setIdentity(String identity)
    {
-      this.account = account;
+      this.identity = identity;
       return this;
    }
    
    /**
-    * @return the key
+    * @return the credential
     */
-   public String getKey()
+   public String getCredential()
    {
-      return key;
+      return credential;
    }
    
    /**
-    * @param key the key to set
+    * @param credential the credential to set
     */
-   public JCloudsConfiguration setKey(String key)
+   public JCloudsConfiguration setCredential(String credential)
    {
-      this.key = key;
+      this.credential = credential;
       return this;
    }
    

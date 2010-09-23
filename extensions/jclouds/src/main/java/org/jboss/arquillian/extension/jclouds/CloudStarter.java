@@ -32,7 +32,6 @@ import org.jclouds.compute.ComputeServiceContext;
 import org.jclouds.compute.ComputeServiceContextFactory;
 import org.jclouds.compute.domain.NodeMetadata;
 import org.jclouds.compute.domain.Template;
-import org.jclouds.compute.predicates.NodePredicates;
 import org.jclouds.io.Payloads;
 import org.jclouds.logging.log4j.config.Log4JLoggingModule;
 import org.jclouds.ssh.jsch.config.JschSshClientModule;
@@ -62,8 +61,8 @@ public class CloudStarter implements EventHandler<Event>
       
       ComputeServiceContext computeContext = new ComputeServiceContextFactory().createContext(
             config.getProvider(), 
-            config.getAccount(), 
-            config.getKey(),
+            config.getIdentity(), 
+            config.getCredential(),
             ImmutableSet.of(
                   new Log4JLoggingModule(), 
                   new JschSshClientModule()));

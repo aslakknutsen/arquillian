@@ -23,6 +23,7 @@
 
   <!-- Aggregate Modules -->
   <modules>
+    <module>jclouds</module>
     <module>performance</module>
     <module>selenium</module>
   </modules>

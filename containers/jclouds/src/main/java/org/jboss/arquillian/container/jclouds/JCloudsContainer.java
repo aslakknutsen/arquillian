@@ -60,8 +60,8 @@ public class JCloudsContainer implements DeployableContainer
 
       ComputeServiceContext computeContext = new ComputeServiceContextFactory().createContext(
             config.getProvider(), 
-            config.getAccount(), 
-            config.getKey(),
+            config.getIdentity(), 
+            config.getCredential(),
             ImmutableSet.of(
                   new Log4JLoggingModule(), 
                   new JschSshClientModule()));
