@@ -77,7 +77,7 @@ public class JCloudsContainer implements DeployableContainer
                                  .osFamily(UBUNTU)
                                  //.minRam(1000)
                                  .options(
-                                       inboundPorts(1099, 8080)
+                                       inboundPorts(1099, config.getRemoteServerHttpPort())
                                        .authorizePublicKey(
                                              Payloads.newFilePayload(
                                                    new File(System.getProperty("user.home") + "/.ssh/id_rsa.pub")))
