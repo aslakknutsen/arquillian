@@ -58,6 +58,7 @@
         <module>openejb-embedded-3.1</module>
         <module>openwebbeans-embedded-1</module>
 <!--        <module>osgi-embedded-4.2</module> -->
+	<module>jclouds</module>
       </modules>
     </profile>
 
