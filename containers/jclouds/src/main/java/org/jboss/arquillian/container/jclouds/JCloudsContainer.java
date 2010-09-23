@@ -16,6 +16,7 @@
  */
 package org.jboss.arquillian.container.jclouds;
 
+
 import static org.jclouds.compute.options.TemplateOptions.Builder.blockOnComplete;
 
 import java.io.File;
