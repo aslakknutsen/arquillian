@@ -1,10 +1,6 @@
 package org.jboss.arquillian.container.jclouds;
 
-<<<<<<< HEAD
 import static org.jclouds.compute.util.ComputeServiceUtils.extractTargzIntoDirectory;
-=======
-import static org.jclouds.compute.util.ComputeServiceUtils.extractZipIntoDirectory;
->>>>>>> updated to show an example of how to start jboss
 import static org.jclouds.scriptbuilder.domain.Statements.exec;
 import static org.jclouds.scriptbuilder.domain.Statements.interpret;
 
