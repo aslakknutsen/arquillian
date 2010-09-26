@@ -21,6 +21,7 @@ import com.google.common.collect.ImmutableMap;
  * @author Adrian Cole
  */
 public class RunScriptData {
+
    private static String jbossHome = "/usr/local/jboss";
 
    public static String createScriptInstallBase(OperatingSystem os) {
