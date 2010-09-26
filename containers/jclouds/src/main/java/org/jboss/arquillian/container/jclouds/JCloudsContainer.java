@@ -67,7 +67,8 @@ public class JCloudsContainer implements DeployableContainer
     * @see org.jboss.arquillian.spi.DeployableContainer#setup(org.jboss.arquillian.spi.Context,
     * org.jboss.arquillian.spi.Configuration)
     */
-   public void setup(Context context, Configuration configuration) {
+   public void setup(Context context, Configuration configuration)
+   {
       JCloudsConfiguration config = configuration.getContainerConfig(JCloudsConfiguration.class);
 
       ComputeServiceContext computeContext = new ComputeServiceContextFactory().createContext(
@@ -132,7 +133,8 @@ public class JCloudsContainer implements DeployableContainer
     * 
     * @see org.jboss.arquillian.spi.DeployableContainer#start(org.jboss.arquillian.spi.Context)
     */
-   public void start(Context context) throws LifecycleException {
+   public void start(Context context) throws LifecycleException
+   {
       JCloudsConfiguration config = context.get(Configuration.class).getContainerConfig(JCloudsConfiguration.class);
       ComputeServiceContext computeContext = context.get(ComputeServiceContext.class);
 
@@ -202,7 +204,6 @@ public class JCloudsContainer implements DeployableContainer
       {
          throw new DeploymentException("Could not deploy to node", e);
       }
-
       try
       {
          return new ServletMethodExecutor(new URL("http", publicAddress, config.getRemoteServerHttpPort(), "/"));
