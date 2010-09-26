@@ -39,19 +39,21 @@ public class RunScriptData {
    public static Statement createScriptInstallAndStartJBoss(String publicKey, OperatingSystem os) {
       Map<String, String> envVariables = ImmutableMap.of("jbossHome", jbossHome);
       Statement toReturn = new InitBuilder(
-            "jboss",
-            jbossHome,
-            jbossHome,
-            envVariables,
-            ImmutableList.<Statement> of(
-                  new AuthorizeRSAPublicKey(publicKey),
-                  exec(createScriptInstallBase(os)),
-                  extractZipIntoDirectory(URI.create(String.format(
-                        "http://superb-sea2.dl.sourceforge.net/project/jboss/JBoss/JBoss-%s/%s.zip", jbossVersion,
-                        jboss)), "/usr/local"), exec("{md} " + jbossHome), exec("mv /usr/local/jboss-" + jbossVersion
-                        + "/* " + jbossHome), exec("mkdir -m 1777 " + jbossHome + "/deploy")),
-            ImmutableList
-                  .<Statement> of(interpret("java -Xms128m -Xmx512m -XX:MaxPermSize=256m -Dorg.jboss.resolver.warning=true -Dsun.rmi.dgc.client.gcInterval=3600000 -Dsun.rmi.dgc.server.gcInterval=3600000 -Djava.endorsed.dirs=lib/endorsed -classpath bin/run.jar org.jboss.Main -b 0.0.0.0")));
+               "jboss",
+               jbossHome,
+               jbossHome,
+               envVariables,
+               ImmutableList.<Statement> of(
+                     new AuthorizeRSAPublicKey(publicKey), 
+                     exec(createScriptInstallBase(os)),
+                     extractZipIntoDirectory(URI.create(
+                              String.format(
+                                 "http://superb-sea2.dl.sourceforge.net/project/jboss/JBoss/JBoss-%s/%s.zip",
+                                 jbossVersion, 
+                                 jboss)), "/usr/local"), exec("{md} " + jbossHome),
+                     exec("mv /usr/local/jboss-" + jbossVersion + "/* " + jbossHome)),
+               ImmutableList.<Statement> of(interpret(
+                     "java -Xms128m -Xmx512m -XX:MaxPermSize=256m -Dorg.jboss.resolver.warning=true -Dsun.rmi.dgc.client.gcInterval=3600000 -Dsun.rmi.dgc.server.gcInterval=3600000 -Djava.endorsed.dirs=lib/endorsed -classpath bin/run.jar org.jboss.Main -b 0.0.0.0")));
       return toReturn;
    }
 
@@ -83,10 +85,9 @@ public class RunScriptData {
          .toString();
 
    public static final String ZYPPER_RUN_SCRIPT = new StringBuilder()//
-         .append("echo nameserver 208.67.222.222 >> /etc/resolv.conf\n")//
-         .append("sudo zypper install unzip\n")//
-         .append("sudo zypper install curl\n")//
-         .append("sudo zypper install java-1.6.0-openjdk-devl\n")//
-         .toString();
-
+            .append("echo nameserver 208.67.222.222 >> /etc/resolv.conf\n")//
+            .append("sudo zypper install unzip\n")//
+            .append("sudo zypper install curl\n")//
+            .append("sudo zypper install java-1.6.0-openjdk-devl\n")//
+            .toString();
 }

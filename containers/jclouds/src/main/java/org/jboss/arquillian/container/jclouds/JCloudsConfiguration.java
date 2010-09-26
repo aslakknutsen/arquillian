@@ -79,10 +79,9 @@ public class JCloudsConfiguration implements ContainerConfiguration
    /**
     * @param provider the provider to set
     */
-   public JCloudsConfiguration setProvider(String provider)
+   public void setProvider(String provider)
    {
       this.provider = provider;
-      return this;
    }
    
    /**
@@ -96,10 +95,9 @@ public class JCloudsConfiguration implements ContainerConfiguration
    /**
     * @param identity the identity to set
     */
-   public JCloudsConfiguration setIdentity(String identity)
+   public void setIdentity(String identity)
    {
       this.identity = identity;
-      return this;
    }
    
    /**
@@ -113,10 +111,9 @@ public class JCloudsConfiguration implements ContainerConfiguration
    /**
     * @param credential the credential to set
     */
-   public JCloudsConfiguration setCredential(String credential)
+   public void setCredential(String credential)
    {
       this.credential = credential;
-      return this;
    }
    
    /**
@@ -130,10 +127,9 @@ public class JCloudsConfiguration implements ContainerConfiguration
    /**
     * @param tag the tag to set
     */
-   public JCloudsConfiguration setTag(String tag)
+   public void setTag(String tag)
    {
       this.tag = tag;
-      return this;
    }
    
    /**
@@ -147,10 +143,9 @@ public class JCloudsConfiguration implements ContainerConfiguration
    /**
     * @param nodeCount the nodeCount to set
     */
-   public JCloudsConfiguration setNodeCount(Integer nodeCount)
+   public void setNodeCount(Integer nodeCount)
    {
       this.nodeCount = nodeCount;
-      return this;
    }
    
    /**
@@ -164,9 +159,8 @@ public class JCloudsConfiguration implements ContainerConfiguration
    /**
     * @param remoteServerHttpPort the remoteServerHttpPort to set
     */
-   public JCloudsConfiguration setRemoteServerHttpPort(int remoteServerHttpPort)
+   public void setRemoteServerHttpPort(int remoteServerHttpPort)
    {
       this.remoteServerHttpPort = remoteServerHttpPort;
-      return this;
    }
 }

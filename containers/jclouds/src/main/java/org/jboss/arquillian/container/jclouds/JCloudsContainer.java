@@ -51,20 +51,23 @@ import com.google.common.io.Files;
  * @author <a href="mailto:aslak@redhat.com">Aslak Knutsen</a>
  * @version $Revision: $
  */
-public class JCloudsContainer implements DeployableContainer {
-
+public class JCloudsContainer implements DeployableContainer
+{
    /*
     * (non-Javadoc)
     * 
     * @see org.jboss.arquillian.spi.DeployableContainer#setup(org.jboss.arquillian.spi.Context,
     * org.jboss.arquillian.spi.Configuration)
     */
-   public void setup(Context context, Configuration configuration) {
+   public void setup(Context context, Configuration configuration)
+   {
       JCloudsConfiguration config = configuration.getContainerConfig(JCloudsConfiguration.class);
 
-      ComputeServiceContext computeContext = new ComputeServiceContextFactory().createContext(config.getProvider(),
-               config.getIdentity(), config.getCredential(), ImmutableSet.of(new Log4JLoggingModule(),
-                        new JschSshClientModule()));
+      ComputeServiceContext computeContext = new ComputeServiceContextFactory().createContext(
+            config.getProvider(),
+            config.getIdentity(), 
+            config.getCredential(),
+            ImmutableSet.of(new Log4JLoggingModule(), new JschSshClientModule()));
 
       // Bind the ComputeServiceContext to the Arquillian Context so other Handlers can interact
       // with it
@@ -73,17 +76,23 @@ public class JCloudsContainer implements DeployableContainer {
       ComputeService computeService = computeContext.getComputeService();
 
       // TOOD: should be extracted out into some sort of configuration..
-      Template template = computeService.templateBuilder().options(blockOnComplete(false).blockOnPort(1099, 300).inboundPorts(22, 1099, 8080))
-               .build();
-  
-      try {
+      Template template = computeService.templateBuilder()
+            .options(
+                  blockOnComplete(false).blockOnPort(config.getRemoteServerHttpPort(), 300)
+                  .inboundPorts(22, config.getRemoteServerHttpPort()))
+                  .build();
+
+      try
+      {
          // note this is a dependency on the template resolution
          template.getOptions().runScript(
-                  RunScriptData.createScriptInstallAndStartJBoss(Files.toString(new File(System.getProperty("user.home")
-                           + "/.ssh/id_rsa.pub"), Charsets.UTF_8), template.getImage()
-                           .getOperatingSystem()));
+               RunScriptData.createScriptInstallAndStartJBoss(
+                     Files.toString(new File(System.getProperty("user.home") + "/.ssh/id_rsa.pub"), Charsets.UTF_8),
+                     template.getImage().getOperatingSystem()));
 
-      } catch (IOException e) {
+      }
+      catch (IOException e)
+      {
          Throwables.propagate(e);
       }
 
@@ -95,18 +104,22 @@ public class JCloudsContainer implements DeployableContainer {
     * 
     * @see org.jboss.arquillian.spi.DeployableContainer#start(org.jboss.arquillian.spi.Context)
     */
-   public void start(Context context) throws LifecycleException {
+   public void start(Context context) throws LifecycleException
+   {
       JCloudsConfiguration config = context.get(Configuration.class).getContainerConfig(JCloudsConfiguration.class);
       ComputeServiceContext computeContext = context.get(ComputeServiceContext.class);
       Template template = context.get(Template.class);
 
-      try {
+      try
+      {
          // start the nodes
          Set<? extends NodeMetadata> startedNodes = computeContext.getComputeService().runNodesWithTag(config.getTag(),
-                  config.getNodeCount(), template);
+               config.getNodeCount(), template);
 
          context.add(NodeOverview.class, new NodeOverview(startedNodes));
-      } catch (Exception e) {
+      }
+      catch (Exception e)
+      {
          throw new LifecycleException("Could not start nodes", e);
       }
    }
@@ -117,16 +130,20 @@ public class JCloudsContainer implements DeployableContainer {
     * @see org.jboss.arquillian.spi.DeployableContainer#deploy(org.jboss.arquillian.spi.Context,
     * org.jboss.shrinkwrap.api.Archive)
     */
-   public ContainerMethodExecutor deploy(Context context, Archive<?> archive) throws DeploymentException {
+   public ContainerMethodExecutor deploy(Context context, Archive<?> archive) throws DeploymentException
+   {
       JCloudsConfiguration config = context.get(Configuration.class).getContainerConfig(JCloudsConfiguration.class);
       NodeOverview nodeOverview = context.get(NodeOverview.class);
       String publicAddress = nodeOverview.getStartedNodes().iterator().next().getPublicAddresses().iterator().next();
-
+      
       // TODO: push Archive to BlobStore
 
-      try {
+      try
+      {
          return new ServletMethodExecutor(new URL("http", publicAddress, config.getRemoteServerHttpPort(), "/"));
-      } catch (Exception e) {
+      }
+      catch (Exception e)
+      {
          throw new RuntimeException("Could not create ContianerMethodExecutor", e);
       }
    }
@@ -137,7 +154,8 @@ public class JCloudsContainer implements DeployableContainer {
     * @see org.jboss.arquillian.spi.DeployableContainer#undeploy(org.jboss.arquillian.spi.Context,
     * org.jboss.shrinkwrap.api.Archive)
     */
-   public void undeploy(Context context, Archive<?> archive) throws DeploymentException {
+   public void undeploy(Context context, Archive<?> archive) throws DeploymentException
+   {
       /*
        * NodeOverview nodeOverview = context.get(NodeOverview.class); String publicAddress =
        * nodeOverview.getStartedNodes().iterator().next().getPublicAddresses().iterator().next();
@@ -151,7 +169,8 @@ public class JCloudsContainer implements DeployableContainer {
     * 
     * @see org.jboss.arquillian.spi.DeployableContainer#stop(org.jboss.arquillian.spi.Context)
     */
-   public void stop(Context context) throws LifecycleException {
+   public void stop(Context context) throws LifecycleException
+   {
       JCloudsConfiguration config = context.get(Configuration.class).getContainerConfig(JCloudsConfiguration.class);
       ComputeServiceContext computeContext = context.get(ComputeServiceContext.class);
 
