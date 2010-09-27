@@ -92,6 +92,13 @@
 			<version>${version.jclouds_core}</version>
 			<scope>provided</scope>
 		</dependency>
+		<dependency>
+			<groupId>org.jclouds</groupId>
+			<artifactId>jclouds-aws</artifactId>
+			<version>${version.jclouds_core}</version>
+			<scope>provided</scope>
+		</dependency>
+
 
 		<!-- Needed for CDI Enricher packaging, arquillian bug -->
 		<dependency>
