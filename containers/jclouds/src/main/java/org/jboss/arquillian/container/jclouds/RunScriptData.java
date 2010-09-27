@@ -21,7 +21,7 @@ import com.google.common.collect.ImmutableMap;
  * @author Adrian Cole
  */
 public class RunScriptData {
-   private static String jbossVersion = "5.0.0.CR2";
+   private static String jbossVersion = "6.0.0.M5";
    private static String jboss = String.format("jboss-%s-jdk6", jbossVersion);
    private static String jbossHome = "/usr/local/jboss";
 
@@ -39,21 +39,21 @@ public class RunScriptData {
    public static Statement createScriptInstallAndStartJBoss(String publicKey, OperatingSystem os) {
       Map<String, String> envVariables = ImmutableMap.of("jbossHome", jbossHome);
       Statement toReturn = new InitBuilder(
-               "jboss",
-               jbossHome,
-               jbossHome,
-               envVariables,
-               ImmutableList.<Statement> of(
-                     new AuthorizeRSAPublicKey(publicKey), 
-                     exec(createScriptInstallBase(os)),
-                     extractZipIntoDirectory(URI.create(
-                              String.format(
-                                 "http://superb-sea2.dl.sourceforge.net/project/jboss/JBoss/JBoss-%s/%s.zip",
-                                 jbossVersion, 
-                                 jboss)), "/usr/local"), exec("{md} " + jbossHome),
-                     exec("mv /usr/local/jboss-" + jbossVersion + "/* " + jbossHome)),
-               ImmutableList.<Statement> of(interpret(
-                     "java -Xms128m -Xmx512m -XX:MaxPermSize=256m -Dorg.jboss.resolver.warning=true -Dsun.rmi.dgc.client.gcInterval=3600000 -Dsun.rmi.dgc.server.gcInterval=3600000 -Djava.endorsed.dirs=lib/endorsed -classpath bin/run.jar org.jboss.Main -b 0.0.0.0")));
+            "jboss",
+            jbossHome,
+            jbossHome,
+            envVariables,
+            ImmutableList.<Statement> of(
+                  new AuthorizeRSAPublicKey(publicKey),
+                  exec(createScriptInstallBase(os)),
+                  extractZipIntoDirectory(
+                        URI.create(
+                           "http://sunet.dl.sourceforge.net/project/jboss/JBoss/JBoss-6.0.0.M5/jboss-as-distribution-6.0.0.20100911-M5.zip"), 
+                           "/usr/local"), 
+                        exec("{md} " + jbossHome), 
+                        exec("mv /usr/local/jboss-*/* " + jbossHome)),
+            ImmutableList
+                  .<Statement> of(interpret("java -Xms128m -Xmx512m -XX:MaxPermSize=256m -Dorg.jboss.resolver.warning=true -Dsun.rmi.dgc.client.gcInterval=3600000 -Dsun.rmi.dgc.server.gcInterval=3600000 -Djava.endorsed.dirs=lib/endorsed -classpath bin/run.jar org.jboss.Main -b 0.0.0.0")));
       return toReturn;
    }
 
