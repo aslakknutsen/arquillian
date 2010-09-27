@@ -46,6 +46,11 @@ public class JCloudsConfiguration implements ContainerConfiguration
    private String credential;
 
    /**
+    * Path to certificate used for SSH.
+    */
+   private String certificate;
+   
+   /**
     * The name of the nodes to start
     */
    private String tag = UUID.randomUUID().toString().replaceAll("-", "");
@@ -122,6 +127,7 @@ public class JCloudsConfiguration implements ContainerConfiguration
       this.credential = credential;
    }
    
+   
    /**
     * @return the tag
     */
@@ -168,6 +174,22 @@ public class JCloudsConfiguration implements ContainerConfiguration
    public void setRemoteServerHttpPort(int remoteServerHttpPort)
    {
       this.remoteServerHttpPort = remoteServerHttpPort;
+   }
+   
+   /**
+    * @return the certificate
+    */
+   public String getCertificate()
+   {
+      return certificate;
+   }
+   
+   /**
+    * @param certificate the certificate to set
+    */
+   public void setCertificate(String certificate)
+   {
+      this.certificate = certificate;
    }
    
    /**

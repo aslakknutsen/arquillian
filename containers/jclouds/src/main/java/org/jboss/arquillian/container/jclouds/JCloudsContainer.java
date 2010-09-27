@@ -21,6 +21,7 @@ import static org.jclouds.compute.options.TemplateOptions.Builder.blockOnComplet
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.util.HashSet;
 import java.util.Set;
 
 import org.jboss.arquillian.protocol.servlet_3.ServletMethodExecutor;
@@ -31,13 +32,18 @@ import org.jboss.arquillian.spi.DeployableContainer;
 import org.jboss.arquillian.spi.DeploymentException;
 import org.jboss.arquillian.spi.LifecycleException;
 import org.jboss.shrinkwrap.api.Archive;
+import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jclouds.compute.ComputeService;
 import org.jclouds.compute.ComputeServiceContext;
 import org.jclouds.compute.ComputeServiceContextFactory;
 import org.jclouds.compute.domain.NodeMetadata;
 import org.jclouds.compute.domain.Template;
 import org.jclouds.compute.predicates.NodePredicates;
+import org.jclouds.io.Payload;
+import org.jclouds.io.Payloads;
 import org.jclouds.logging.log4j.config.Log4JLoggingModule;
+import org.jclouds.net.IPSocket;
+import org.jclouds.ssh.SshClient;
 import org.jclouds.ssh.jsch.config.JschSshClientModule;
 
 import com.google.common.base.Charsets;
@@ -73,9 +79,16 @@ public class JCloudsContainer implements DeployableContainer
       // with it
       context.add(ComputeServiceContext.class, computeContext);
 
-      ComputeService computeService = computeContext.getComputeService();
+      if(!config.useRunningNode())
+      {
+         ComputeService computeService = computeContext.getComputeService();
+         Template template = createTemplate(config, computeService);
+         context.add(Template.class, template);
+      }
+   }
 
-      // TOOD: should be extracted out into some sort of configuration..
+   private Template createTemplate(JCloudsConfiguration config, ComputeService computeService)
+   {
       Template template = computeService.templateBuilder()
             .options(
                   blockOnComplete(false).blockOnPort(config.getRemoteServerHttpPort(), 300)
@@ -87,7 +100,7 @@ public class JCloudsContainer implements DeployableContainer
          // note this is a dependency on the template resolution
          template.getOptions().runScript(
                RunScriptData.createScriptInstallAndStartJBoss(
-                     Files.toString(new File(System.getProperty("user.home") + "/.ssh/id_rsa.pub"), Charsets.UTF_8),
+                     Files.toString(new File(config.getCertificate() + ".pub"), Charsets.UTF_8),
                      template.getImage().getOperatingSystem()));
 
       }
@@ -95,8 +108,7 @@ public class JCloudsContainer implements DeployableContainer
       {
          Throwables.propagate(e);
       }
-
-      context.add(Template.class, template);
+      return template;
    }
 
    /*
@@ -108,14 +120,27 @@ public class JCloudsContainer implements DeployableContainer
    {
       JCloudsConfiguration config = context.get(Configuration.class).getContainerConfig(JCloudsConfiguration.class);
       ComputeServiceContext computeContext = context.get(ComputeServiceContext.class);
-      Template template = context.get(Template.class);
 
       try
       {
-         // start the nodes
-         Set<? extends NodeMetadata> startedNodes = computeContext.getComputeService().runNodesWithTag(config.getTag(),
-               config.getNodeCount(), template);
-
+         Set<NodeMetadata> startedNodes = new HashSet<NodeMetadata>();
+         if(config.useRunningNode())
+         {
+            startedNodes.add(
+                  computeContext.getComputeService().getNodeMetadata(
+                        config.getNodeId()));
+         }
+         else
+         {
+            // start the nodes
+            Template template = context.get(Template.class);
+            startedNodes.addAll(
+                  computeContext.getComputeService().runNodesWithTag(
+                        config.getTag(),
+                        config.getNodeCount(), 
+                        template));
+               
+         }
          context.add(NodeOverview.class, new NodeOverview(startedNodes));
       }
       catch (Exception e)
@@ -133,10 +158,39 @@ public class JCloudsContainer implements DeployableContainer
    public ContainerMethodExecutor deploy(Context context, Archive<?> archive) throws DeploymentException
    {
       JCloudsConfiguration config = context.get(Configuration.class).getContainerConfig(JCloudsConfiguration.class);
+      ComputeServiceContext computeContext = context.get(ComputeServiceContext.class);
       NodeOverview nodeOverview = context.get(NodeOverview.class);
-      String publicAddress = nodeOverview.getStartedNodes().iterator().next().getPublicAddresses().iterator().next();
-      
-      // TODO: push Archive to BlobStore
+      NodeMetadata nodeMetadata = nodeOverview.getStartedNodes().iterator().next();
+      String publicAddress = nodeMetadata.getPublicAddresses().iterator().next();
+
+      try
+      {
+         IPSocket socket = new IPSocket(publicAddress, 22);
+         SshClient ssh = computeContext.utils().sshFactory()
+               .create(
+                     socket, 
+                     nodeMetadata.getCredentials().identity, 
+                     Files.toByteArray(new File(config.getCertificate())));
+         try 
+         {
+            ssh.connect();
+            Payload toSend = Payloads.newInputStreamPayload(archive.as(ZipExporter.class).exportZip());
+            ssh.put(archive.getName(), toSend);
+            ssh.exec("mv " + archive.getName() + " /usr/local/jboss/server/default/deploy/");
+            
+         } 
+         finally 
+         {
+            if (ssh != null)
+            {
+               ssh.disconnect();
+            }
+         }
+      }
+      catch (Exception e) 
+      {
+         throw new DeploymentException("Could not deploy to node", e);
+      }
 
       try
       {
@@ -156,12 +210,37 @@ public class JCloudsContainer implements DeployableContainer
     */
    public void undeploy(Context context, Archive<?> archive) throws DeploymentException
    {
-      /*
-       * NodeOverview nodeOverview = context.get(NodeOverview.class); String publicAddress =
-       * nodeOverview.getStartedNodes().iterator().next().getPublicAddresses().iterator().next();
-       */
-      // TODO: remove Archive from BlobStore
+      JCloudsConfiguration config = context.get(Configuration.class).getContainerConfig(JCloudsConfiguration.class);
+      ComputeServiceContext computeContext = context.get(ComputeServiceContext.class);
+      NodeOverview nodeOverview = context.get(NodeOverview.class);
+      NodeMetadata nodeMetadata = nodeOverview.getStartedNodes().iterator().next();
+      String publicAddress = nodeMetadata.getPublicAddresses().iterator().next();
 
+      try
+      {
+         IPSocket socket = new IPSocket(publicAddress, 22);
+         SshClient ssh = computeContext.utils().sshFactory()
+               .create(
+                     socket, 
+                     nodeMetadata.getCredentials().identity, 
+                     Files.toByteArray(new File(config.getCertificate())));
+         try 
+         {
+            ssh.connect();
+            ssh.exec("rm -rf /usr/local/jboss/server/default/deploy/" + archive.getName());
+         } 
+         finally 
+         {
+            if (ssh != null)
+            {
+               ssh.disconnect();
+            }
+         }
+      }
+      catch (Exception e) 
+      {
+         throw new DeploymentException("Could not deploy to node", e);
+      }
    }
 
    /*
@@ -174,8 +253,10 @@ public class JCloudsContainer implements DeployableContainer
       JCloudsConfiguration config = context.get(Configuration.class).getContainerConfig(JCloudsConfiguration.class);
       ComputeServiceContext computeContext = context.get(ComputeServiceContext.class);
 
-      computeContext.getComputeService().destroyNodesMatching(NodePredicates.withTag(config.getTag()));
-
+      if(!config.useRunningNode())
+      {
+         computeContext.getComputeService().destroyNodesMatching(NodePredicates.withTag(config.getTag()));
+      }
    }
 
 }

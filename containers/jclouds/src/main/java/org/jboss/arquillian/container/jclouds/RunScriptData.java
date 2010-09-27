@@ -21,8 +21,6 @@ import com.google.common.collect.ImmutableMap;
  * @author Adrian Cole
  */
 public class RunScriptData {
-   private static String jbossVersion = "6.0.0.M5";
-   private static String jboss = String.format("jboss-%s-jdk6", jbossVersion);
    private static String jbossHome = "/usr/local/jboss";
 
    public static String createScriptInstallBase(OperatingSystem os) {
@@ -51,7 +49,8 @@ public class RunScriptData {
                            "http://sunet.dl.sourceforge.net/project/jboss/JBoss/JBoss-6.0.0.M5/jboss-as-distribution-6.0.0.20100911-M5.zip"), 
                            "/usr/local"), 
                         exec("{md} " + jbossHome), 
-                        exec("mv /usr/local/jboss-*/* " + jbossHome)),
+                        exec("mv /usr/local/jboss-*/* " + jbossHome),
+                        exec("chmod -R oug+r+w " + jbossHome)),
             ImmutableList
                   .<Statement> of(interpret("java -Xms128m -Xmx512m -XX:MaxPermSize=256m -Dorg.jboss.resolver.warning=true -Dsun.rmi.dgc.client.gcInterval=3600000 -Dsun.rmi.dgc.server.gcInterval=3600000 -Djava.endorsed.dirs=lib/endorsed -classpath bin/run.jar org.jboss.Main -b 0.0.0.0")));
       return toReturn;
