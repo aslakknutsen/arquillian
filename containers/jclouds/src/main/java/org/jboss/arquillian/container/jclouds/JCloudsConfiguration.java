@@ -55,6 +55,12 @@ public class JCloudsConfiguration implements ContainerConfiguration
     */
    private Integer nodeCount = 1;
 
+   
+   /**
+    * Run against a specific node. 
+    */
+   private String nodeId = null;
+   
    /**
     * Port opened up to the server and used by the Servlet Protocol.
     */
@@ -162,5 +168,26 @@ public class JCloudsConfiguration implements ContainerConfiguration
    public void setRemoteServerHttpPort(int remoteServerHttpPort)
    {
       this.remoteServerHttpPort = remoteServerHttpPort;
+   }
+   
+   /**
+    * @return the nodeId
+    */
+   public String getNodeId()
+   {
+      return nodeId;
+   }
+   
+   /**
+    * @param nodeId the nodeId to set
+    */
+   public void setNodeId(String nodeId)
+   {
+      this.nodeId = nodeId;
+   }
+   
+   public boolean useRunningNode()
+   {
+      return nodeId != null;
    }
 }
