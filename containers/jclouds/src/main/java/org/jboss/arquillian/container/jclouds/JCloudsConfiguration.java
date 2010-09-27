@@ -143,6 +143,7 @@ public class JCloudsConfiguration implements ContainerConfiguration
       this.credential = credential;
    }
    
+   
    /**
     * @return the tag
     */
