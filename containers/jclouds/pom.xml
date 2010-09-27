@@ -86,13 +86,19 @@
 			<scope>provided</scope>
 		</dependency>
 
-
 		<dependency>
 			<groupId>org.jclouds</groupId>
 			<artifactId>jclouds-bluelock</artifactId>
 			<version>${version.jclouds_core}</version>
 			<scope>provided</scope>
 		</dependency>
+		<dependency>
+			<groupId>org.jclouds</groupId>
+			<artifactId>jclouds-aws</artifactId>
+			<version>${version.jclouds_core}</version>
+			<scope>provided</scope>
+		</dependency>
+
 
 		<!-- Needed for CDI Enricher packaging, arquillian bug -->
 		<dependency>
@@ -121,6 +127,13 @@
 			<scope>test</scope>
 		</dependency>
 
+		<dependency>
+			<groupId>org.jboss.spec</groupId> 
+			<artifactId>jboss-javaee-6.0</artifactId> 
+   			<version>1.0.0.Beta7</version>
+   			<type>pom</type>
+   			<scope>test</scope> 
+		</dependency>
 	</dependencies>
 </project>
 
