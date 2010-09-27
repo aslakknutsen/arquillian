@@ -61,6 +61,12 @@ public class JCloudsConfiguration implements ContainerConfiguration
     */
    private Integer nodeCount = 1;
 
+   
+   /**
+    * Run against a specific node. 
+    */
+   private String nodeId = null;
+   
    /**
     * 
     */
@@ -253,5 +259,4 @@ public class JCloudsConfiguration implements ContainerConfiguration
    {
       return nodeId != null;
    }
-   
 }
