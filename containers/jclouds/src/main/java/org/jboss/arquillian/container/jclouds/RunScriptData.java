@@ -1,6 +1,6 @@
 package org.jboss.arquillian.container.jclouds;
 
-import static org.jclouds.compute.util.ComputeServiceUtils.extractZipIntoDirectory;
+import static org.jclouds.compute.util.ComputeServiceUtils.extractTargzIntoDirectory;
 import static org.jclouds.scriptbuilder.domain.Statements.exec;
 import static org.jclouds.scriptbuilder.domain.Statements.interpret;
 
@@ -44,11 +44,10 @@ public class RunScriptData {
             ImmutableList.<Statement> of(
                   new AuthorizeRSAPublicKey(publicKey),
                   exec(createScriptInstallBase(os)),
-                  extractZipIntoDirectory(
-                        URI.create("http://sunet.dl.sourceforge.net/project/jboss/JBoss/JBoss-6.0.0.M5/jboss-as-distribution-6.0.0.20100911-M5.zip"), 
-                           "/usr/local"), 
-                  exec("{md} " + jbossHome), 
-                  exec("mv /usr/local/jboss-*/* " + jbossHome),
+                  exec("rm -rf /var/cache/apt /usr/lib/vmware-tools"),// jeos hasn't enough room!
+                  extractTargzIntoDirectory(
+                        URI.create("http://commondatastorage.googleapis.com/jclouds-repo/jboss-as-distribution-6.0.0.20100911-M5.tar.gz"),
+                        "/usr/local"), exec("{md} " + jbossHome), exec("mv /usr/local/jboss-*/* " + jbossHome),
                   exec("chmod -R oug+r+w " + jbossHome)),
             ImmutableList
                   .<Statement> of(interpret("java -Xms128m -Xmx512m -XX:MaxPermSize=256m -Dorg.jboss.resolver.warning=true -Dsun.rmi.dgc.client.gcInterval=3600000 -Dsun.rmi.dgc.server.gcInterval=3600000 -Djava.endorsed.dirs=lib/endorsed -classpath bin/run.jar org.jboss.Main -b 0.0.0.0")));
@@ -60,10 +59,10 @@ public class RunScriptData {
          .append("cp /etc/apt/sources.list /etc/apt/sources.list.old\n")//
          .append(
                "sed 's~us.archive.ubuntu.com~mirror.anl.gov/pub~g' /etc/apt/sources.list.old >/etc/apt/sources.list\n")//
-         .append("apt-get update -y -qq\n")//
-         .append("apt-get install -f -y -qq --force-yes curl\n")//
-         .append("apt-get install -f -y -qq --force-yes unzip\n")//
-         .append("apt-get install -f -y -qq --force-yes openjdk-6-jdk\n")//
+         .append("which curl || apt-get update -y -qq && apt-get install -f -y -qq --force-yes curl\n")//
+         .append(
+               "(which java && java -fullversion 2>&1|egrep -q 1.6 ) || apt-get install -f -y -qq --force-yes openjdk-6-jre\n")//
+         .append("rm -rf /var/cache/apt /usr/lib/vmware-tools\n")// jeos hasn't enough room!
          .toString();
 
    public static final String YUM_RUN_SCRIPT = new StringBuilder()
@@ -76,16 +75,15 @@ public class RunScriptData {
          .append(
                "echo \"baseurl=http://ec2-us-east-mirror.rightscale.com/epel/5/i386/\" >> /etc/yum.repos.d/CentOS-Base.repo\n")//
          .append("echo \"enabled=1\" >> /etc/yum.repos.d/CentOS-Base.repo\n")//
-         .append("yum --nogpgcheck -y install unzip\n")//
-         .append("yum --nogpgcheck -y install curl\n")//
-         .append("yum --nogpgcheck -y install java-1.6.0-openjdk\n")//
+         .append("which curl ||yum --nogpgcheck -y install curl\n")//
+         .append(
+               "(which java && java -fullversion 2>&1|egrep -q 1.6 ) || yum --nogpgcheck -y install java-1.6.0-openjdk&&")//
          .append("echo \"export PATH=\\\"/usr/lib/jvm/jre-1.6.0-openjdk/bin/:\\$PATH\\\"\" >> /root/.bashrc\n")//
          .toString();
 
    public static final String ZYPPER_RUN_SCRIPT = new StringBuilder()//
-            .append("echo nameserver 208.67.222.222 >> /etc/resolv.conf\n")//
-            .append("sudo zypper install unzip\n")//
-            .append("sudo zypper install curl\n")//
-            .append("sudo zypper install java-1.6.0-openjdk-devl\n")//
-            .toString();
+         .append("echo nameserver 208.67.222.222 >> /etc/resolv.conf\n")//
+         .append("which curl || zypper install curl\n")//
+         .append("(which java && java -fullversion 2>&1|egrep -q 1.6 ) || zypper install java-1.6.0-openjdk\n")//
+         .toString();
 }
