@@ -18,6 +18,7 @@ package org.jboss.arquillian.container.jclouds;
 
 import java.util.UUID;
 
+import org.jboss.arquillian.container.jclouds.pool.ObjectPool.UsedObjectStrategy;
 import org.jboss.arquillian.spi.ContainerConfiguration;
 import org.jboss.arquillian.spi.ContainerProfile;
 
@@ -60,6 +61,15 @@ public class JCloudsConfiguration implements ContainerConfiguration
     */
    private Integer nodeCount = 1;
 
+   /**
+    * 
+    */
+   private UsedObjectStrategy usedObjectStrategy = UsedObjectStrategy.REUSE;
+
+   /**
+    * The ID of the image to start. 
+    */
+   private String imageId;
    
    /**
     * Run against a specific node. 
@@ -191,6 +201,38 @@ public class JCloudsConfiguration implements ContainerConfiguration
    {
       this.certificate = certificate;
    }
+
+   /**
+    * @return the usedObjectStrategy
+    */
+   public UsedObjectStrategy getUsedObjectStrategy()
+   {
+      return usedObjectStrategy;
+   }
+   
+   /**
+    * @param usedObjectStrategy 
+    */
+   public void setUsedObjectStrategy(String usedObjectStrategy)
+   {
+      this.usedObjectStrategy = UsedObjectStrategy.valueOf(usedObjectStrategy);
+   }
+
+   /**
+    * @return the imageId
+    */
+   public String getImageId()
+   {
+      return imageId;
+   }
+   
+   /**
+    * @param imageId the imageId to set
+    */
+   public void setImageId(String imageId)
+   {
+      this.imageId = imageId;
+   }
    
    /**
     * @return the nodeId
@@ -212,4 +254,5 @@ public class JCloudsConfiguration implements ContainerConfiguration
    {
       return nodeId != null;
    }
+   
 }

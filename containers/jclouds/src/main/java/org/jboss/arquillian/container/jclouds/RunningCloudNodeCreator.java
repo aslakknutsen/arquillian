@@ -16,32 +16,40 @@
  */
 package org.jboss.arquillian.container.jclouds;
 
-import org.jboss.arquillian.container.jclouds.pool.ObjectPool;
-import org.jboss.arquillian.container.jclouds.pool.PooledObject;
+import org.jboss.arquillian.container.jclouds.pool.Creator;
+import org.jclouds.compute.ComputeServiceContext;
 import org.jclouds.compute.domain.NodeMetadata;
 
 /**
- * NodeOverview
+ * CloudNodeCreator
  *
  * @author <a href="mailto:aslak@redhat.com">Aslak Knutsen</a>
  * @version $Revision: $
  */
-public class NodeOverview
+public class RunningCloudNodeCreator implements Creator<NodeMetadata>
 {
-   private ObjectPool<NodeMetadata> pool;
-
-   public NodeOverview(ObjectPool<NodeMetadata> pool)
+   private ComputeServiceContext context;
+   private String nodeId;
+   
+   public RunningCloudNodeCreator(ComputeServiceContext context, String nodeId)
    {
-      this.pool = pool;
+      this.context = context;
+      this.nodeId = nodeId;
    }
    
-   public PooledObject<NodeMetadata> getNode()
+   /* (non-Javadoc)
+    * @see org.jboss.arquillian.container.jclouds.pool.Creator#create()
+    */
+   public NodeMetadata create()
    {
-      return pool.get();
+      return context.getComputeService().getNodeMetadata(nodeId);
    }
    
-   public void shutdownAll()
+   /* (non-Javadoc)
+    * @see org.jboss.arquillian.container.jclouds.pool.Destroyer#destory(java.lang.Object)
+    */
+   public void destory(NodeMetadata object)
    {
-      pool.shutdown();
+      // don't destory a running node
    }
 }

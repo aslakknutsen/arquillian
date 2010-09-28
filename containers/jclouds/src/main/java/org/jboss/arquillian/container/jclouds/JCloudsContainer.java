@@ -21,9 +21,10 @@ import static org.jclouds.compute.options.TemplateOptions.Builder.blockOnComplet
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-import java.util.HashSet;
-import java.util.Set;
 
+import org.jboss.arquillian.container.jclouds.pool.ObjectPool;
+import org.jboss.arquillian.container.jclouds.pool.ObjectPool.UsedObjectStrategy;
+import org.jboss.arquillian.container.jclouds.pool.PooledObject;
 import org.jboss.arquillian.protocol.servlet_3.ServletMethodExecutor;
 import org.jboss.arquillian.spi.Configuration;
 import org.jboss.arquillian.spi.ContainerMethodExecutor;
@@ -38,11 +39,13 @@ import org.jclouds.compute.ComputeServiceContext;
 import org.jclouds.compute.ComputeServiceContextFactory;
 import org.jclouds.compute.domain.NodeMetadata;
 import org.jclouds.compute.domain.Template;
-import org.jclouds.compute.predicates.NodePredicates;
+import org.jclouds.compute.domain.TemplateBuilder;
+import org.jclouds.compute.options.TemplateOptions;
 import org.jclouds.io.Payload;
 import org.jclouds.io.Payloads;
 import org.jclouds.logging.log4j.config.Log4JLoggingModule;
 import org.jclouds.net.IPSocket;
+import org.jclouds.scriptbuilder.domain.AuthorizeRSAPublicKey;
 import org.jclouds.ssh.SshClient;
 import org.jclouds.ssh.jsch.config.JschSshClientModule;
 
@@ -75,10 +78,10 @@ public class JCloudsContainer implements DeployableContainer
             config.getCredential(),
             ImmutableSet.of(new Log4JLoggingModule(), new JschSshClientModule()));
 
-      // Bind the ComputeServiceContext to the Arquillian Context so other Handlers can interact
-      // with it
+      // Bind the ComputeServiceContext to the Arquillian Context
       context.add(ComputeServiceContext.class, computeContext);
 
+      // Don't create a template if we're in single running instance mode
       if(!config.useRunningNode())
       {
          ComputeService computeService = computeContext.getComputeService();
@@ -89,24 +92,39 @@ public class JCloudsContainer implements DeployableContainer
 
    private Template createTemplate(JCloudsConfiguration config, ComputeService computeService)
    {
-      Template template = computeService.templateBuilder()
+      TemplateBuilder templateBuilder = computeService.templateBuilder()
             .options(
                   blockOnComplete(false).blockOnPort(config.getRemoteServerHttpPort(), 300)
-                  .inboundPorts(22, config.getRemoteServerHttpPort()))
-                  .build();
+                  .inboundPorts(22, config.getRemoteServerHttpPort()));
 
+      String authorizeKey = null;
       try
       {
-         // note this is a dependency on the template resolution
-         template.getOptions().runScript(
-               RunScriptData.createScriptInstallAndStartJBoss(
-                     Files.toString(new File(config.getCertificate() + ".pub"), Charsets.UTF_8),
-                     template.getImage().getOperatingSystem()));
-
+         authorizeKey = Files.toString(new File(config.getCertificate() + ".pub"), Charsets.UTF_8);
       }
       catch (IOException e)
       {
          Throwables.propagate(e);
+      }
+
+      // use a user defined image if specified
+      if(config.getImageId() != null)
+      {
+         templateBuilder.imageId(config.getImageId())
+            .options(TemplateOptions.Builder.runScript(new AuthorizeRSAPublicKey(authorizeKey)));
+         
+      }
+      Template template = templateBuilder.build();
+      
+      // if no image is defined, we run the install routine
+      if(config.getImageId() == null)
+      {
+         // note this is a dependency on the template resolution
+         template.getOptions().runScript(
+               RunScriptData.createScriptInstallAndStartJBoss(
+                     authorizeKey,
+                     template.getImage().getOperatingSystem()));
+   
       }
       return template;
    }
@@ -123,25 +141,27 @@ public class JCloudsContainer implements DeployableContainer
 
       try
       {
-         Set<NodeMetadata> startedNodes = new HashSet<NodeMetadata>();
+         ObjectPool<NodeMetadata> pool;
          if(config.useRunningNode())
          {
-            startedNodes.add(
-                  computeContext.getComputeService().getNodeMetadata(
-                        config.getNodeId()));
+            pool = new ObjectPool<NodeMetadata>(
+                  new RunningCloudNodeCreator(computeContext, config.getNodeId()),
+                  1,
+                  UsedObjectStrategy.REUSE);
          }
          else
          {
             // start the nodes
             Template template = context.get(Template.class);
-            startedNodes.addAll(
-                  computeContext.getComputeService().runNodesWithTag(
-                        config.getTag(),
-                        config.getNodeCount(), 
-                        template));
-               
+            pool = new ObjectPool<NodeMetadata>(
+                  new TemplateCloudNodeCreator(
+                        computeContext, 
+                        template, 
+                        config.getTag()),
+                  config.getNodeCount(),
+                  config.getUsedObjectStrategy());
          }
-         context.add(NodeOverview.class, new NodeOverview(startedNodes));
+         context.add(NodeOverview.class, new NodeOverview(pool));
       }
       catch (Exception e)
       {
@@ -155,37 +175,31 @@ public class JCloudsContainer implements DeployableContainer
     * @see org.jboss.arquillian.spi.DeployableContainer#deploy(org.jboss.arquillian.spi.Context,
     * org.jboss.shrinkwrap.api.Archive)
     */
-   public ContainerMethodExecutor deploy(Context context, Archive<?> archive) throws DeploymentException
+   public ContainerMethodExecutor deploy(final Context context, final Archive<?> archive) throws DeploymentException
    {
       JCloudsConfiguration config = context.get(Configuration.class).getContainerConfig(JCloudsConfiguration.class);
-      ComputeServiceContext computeContext = context.get(ComputeServiceContext.class);
       NodeOverview nodeOverview = context.get(NodeOverview.class);
-      NodeMetadata nodeMetadata = nodeOverview.getStartedNodes().iterator().next();
-      String publicAddress = nodeMetadata.getPublicAddresses().iterator().next();
 
+      // grab a instance from the pool and add it to the Context so undeploy can get the same instance.
+      PooledObject<NodeMetadata> nodeMetadata = nodeOverview.getNode();
+      context.add(PooledObject.class, nodeMetadata);
+      
+      String publicAddress = nodeMetadata.get().getPublicAddresses().iterator().next();
       try
       {
-         IPSocket socket = new IPSocket(publicAddress, 22);
-         SshClient ssh = computeContext.utils().sshFactory()
-               .create(
-                     socket, 
-                     nodeMetadata.getCredentials().identity, 
-                     Files.toByteArray(new File(config.getCertificate())));
-         try 
-         {
-            ssh.connect();
-            Payload toSend = Payloads.newInputStreamPayload(archive.as(ZipExporter.class).exportZip());
-            ssh.put(archive.getName(), toSend);
-            ssh.exec("mv " + archive.getName() + " /usr/local/jboss/server/default/deploy/");
-            
-         } 
-         finally 
-         {
-            if (ssh != null)
-            {
-               ssh.disconnect();
-            }
-         }
+         executeCommands(
+               nodeMetadata.get(), 
+               context, 
+               new CommandExecuter()
+               {
+                  public void execute(SshClient client)
+                  {
+                     Payload toSend = Payloads.newInputStreamPayload(archive.as(ZipExporter.class).exportZip());
+                     client.put(archive.getName(), toSend);
+                     client.exec("/usr/local/jboss/bin/twiddle.sh invoke 'jboss.system:service=MainDeployer' deploy file://`pwd`/" + archive.getName());
+                     //client.exec("mv " + archive.getName() + " /usr/local/jboss/server/default/deploy/");
+                  }
+               });
       }
       catch (Exception e) 
       {
@@ -208,38 +222,31 @@ public class JCloudsContainer implements DeployableContainer
     * @see org.jboss.arquillian.spi.DeployableContainer#undeploy(org.jboss.arquillian.spi.Context,
     * org.jboss.shrinkwrap.api.Archive)
     */
-   public void undeploy(Context context, Archive<?> archive) throws DeploymentException
+   public void undeploy(final Context context, final Archive<?> archive) throws DeploymentException
    {
-      JCloudsConfiguration config = context.get(Configuration.class).getContainerConfig(JCloudsConfiguration.class);
-      ComputeServiceContext computeContext = context.get(ComputeServiceContext.class);
-      NodeOverview nodeOverview = context.get(NodeOverview.class);
-      NodeMetadata nodeMetadata = nodeOverview.getStartedNodes().iterator().next();
-      String publicAddress = nodeMetadata.getPublicAddresses().iterator().next();
-
+      @SuppressWarnings("unchecked")
+      PooledObject<NodeMetadata> nodeMetadata = (PooledObject<NodeMetadata>)context.get(PooledObject.class);
       try
       {
-         IPSocket socket = new IPSocket(publicAddress, 22);
-         SshClient ssh = computeContext.utils().sshFactory()
-               .create(
-                     socket, 
-                     nodeMetadata.getCredentials().identity, 
-                     Files.toByteArray(new File(config.getCertificate())));
-         try 
-         {
-            ssh.connect();
-            ssh.exec("rm -rf /usr/local/jboss/server/default/deploy/" + archive.getName());
-         } 
-         finally 
-         {
-            if (ssh != null)
-            {
-               ssh.disconnect();
-            }
-         }
+         executeCommands(
+               nodeMetadata.get(), 
+               context, 
+               new CommandExecuter()
+               {
+                  public void execute(SshClient client)
+                  {
+                     client.exec("/usr/local/jboss/bin/twiddle.sh invoke 'jboss.system:service=MainDeployer' undeploy file://`pwd`/" + archive.getName());
+                     //client.exec("rm -rf /usr/local/jboss/server/default/deploy/" + archive.getName());
+                  }
+               });
       }
       catch (Exception e) 
       {
          throw new DeploymentException("Could not deploy to node", e);
+      }
+      finally
+      {
+         nodeMetadata.close();
       }
    }
 
@@ -250,13 +257,43 @@ public class JCloudsContainer implements DeployableContainer
     */
    public void stop(Context context) throws LifecycleException
    {
+      ComputeServiceContext computeContext = context.get(ComputeServiceContext.class);
+      NodeOverview nodeOverview = context.get(NodeOverview.class);
+      nodeOverview.shutdownAll();
+
+      computeContext.close();
+   }
+ 
+   private void executeCommands(NodeMetadata metadata, Context context, CommandExecuter executer)
+      throws Exception
+   {
       JCloudsConfiguration config = context.get(Configuration.class).getContainerConfig(JCloudsConfiguration.class);
       ComputeServiceContext computeContext = context.get(ComputeServiceContext.class);
-
-      if(!config.useRunningNode())
+      
+      String publicAddress = metadata.getPublicAddresses().iterator().next();
+      IPSocket socket = new IPSocket(publicAddress, 22);
+      SshClient ssh = computeContext.getUtils().sshFactory()
+            .create(
+                  socket, 
+                  metadata.getCredentials().identity, 
+                  Files.toByteArray(new File(config.getCertificate())));
+ 
+      try 
       {
-         computeContext.getComputeService().destroyNodesMatching(NodePredicates.withTag(config.getTag()));
+         ssh.connect();
+         executer.execute(ssh);
+      } 
+      finally 
+      {
+         if (ssh != null)
+         {
+            ssh.disconnect();
+         }
       }
    }
-
+   
+   private interface CommandExecuter 
+   {
+      void execute(SshClient client);
+   }
 }

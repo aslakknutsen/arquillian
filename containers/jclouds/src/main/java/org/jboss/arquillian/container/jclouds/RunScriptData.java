@@ -45,12 +45,11 @@ public class RunScriptData {
                   new AuthorizeRSAPublicKey(publicKey),
                   exec(createScriptInstallBase(os)),
                   extractZipIntoDirectory(
-                        URI.create(
-                           "http://sunet.dl.sourceforge.net/project/jboss/JBoss/JBoss-6.0.0.M5/jboss-as-distribution-6.0.0.20100911-M5.zip"), 
+                        URI.create("http://sunet.dl.sourceforge.net/project/jboss/JBoss/JBoss-6.0.0.M5/jboss-as-distribution-6.0.0.20100911-M5.zip"), 
                            "/usr/local"), 
-                        exec("{md} " + jbossHome), 
-                        exec("mv /usr/local/jboss-*/* " + jbossHome),
-                        exec("chmod -R oug+r+w " + jbossHome)),
+                  exec("{md} " + jbossHome), 
+                  exec("mv /usr/local/jboss-*/* " + jbossHome),
+                  exec("chmod -R oug+r+w " + jbossHome)),
             ImmutableList
                   .<Statement> of(interpret("java -Xms128m -Xmx512m -XX:MaxPermSize=256m -Dorg.jboss.resolver.warning=true -Dsun.rmi.dgc.client.gcInterval=3600000 -Dsun.rmi.dgc.server.gcInterval=3600000 -Djava.endorsed.dirs=lib/endorsed -classpath bin/run.jar org.jboss.Main -b 0.0.0.0")));
       return toReturn;
