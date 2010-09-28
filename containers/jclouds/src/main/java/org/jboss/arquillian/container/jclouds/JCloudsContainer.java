@@ -178,7 +178,6 @@ public class JCloudsContainer implements DeployableContainer
    public ContainerMethodExecutor deploy(final Context context, final Archive<?> archive) throws DeploymentException
    {
       JCloudsConfiguration config = context.get(Configuration.class).getContainerConfig(JCloudsConfiguration.class);
-      ComputeServiceContext computeContext = context.get(ComputeServiceContext.class);
       NodeOverview nodeOverview = context.get(NodeOverview.class);
 
       // grab a instance from the pool and add it to the Context so undeploy can get the same instance.

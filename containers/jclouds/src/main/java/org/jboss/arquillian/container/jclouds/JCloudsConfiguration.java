@@ -61,6 +61,15 @@ public class JCloudsConfiguration implements ContainerConfiguration
     */
    private Integer nodeCount = 1;
 
+   /**
+    * 
+    */
+   private UsedObjectStrategy usedObjectStrategy = UsedObjectStrategy.REUSE;
+
+   /**
+    * The ID of the image to start. 
+    */
+   private String imageId;
    
    /**
     * Run against a specific node. 
@@ -260,4 +269,5 @@ public class JCloudsConfiguration implements ContainerConfiguration
    {
       return nodeId != null;
    }
+   
 }
