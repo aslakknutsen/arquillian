@@ -16,7 +16,6 @@
  */
 package org.jboss.arquillian.container.jclouds;
 
-import org.jboss.arquillian.container.jclouds.pool.Creator;
 import org.jclouds.compute.ComputeServiceContext;
 import org.jclouds.compute.domain.NodeMetadata;
 
@@ -26,30 +25,31 @@ import org.jclouds.compute.domain.NodeMetadata;
  * @author <a href="mailto:aslak@redhat.com">Aslak Knutsen</a>
  * @version $Revision: $
  */
-public class RunningCloudNodeCreator implements Creator<NodeMetadata>
+public class RunningCloudNodeCreator extends ConnectedNodeCreator
 {
-   private ComputeServiceContext context;
    private String nodeId;
    
    public RunningCloudNodeCreator(ComputeServiceContext context, String nodeId)
    {
-      this.context = context;
+      super(context);
       this.nodeId = nodeId;
    }
    
    /* (non-Javadoc)
-    * @see org.jboss.arquillian.container.jclouds.pool.Creator#create()
+    * @see org.jboss.arquillian.container.jclouds.ConnectedNodeCreator#createNodeMetadata()
     */
-   public NodeMetadata create()
+   @Override
+   public NodeMetadata createNodeMetadata()
    {
-      return context.getComputeService().getNodeMetadata(nodeId);
+      return getComputeContext().getComputeService().getNodeMetadata(nodeId);
    }
    
    /* (non-Javadoc)
-    * @see org.jboss.arquillian.container.jclouds.pool.Destroyer#destory(java.lang.Object)
+    * @see org.jboss.arquillian.container.jclouds.ConnectedNodeCreator#destroyNodeMetadata(org.jclouds.compute.domain.NodeMetadata)
     */
-   public void destory(NodeMetadata object)
+   @Override
+   public void destroyNodeMetadata(NodeMetadata nodeMetadata)
    {
-      // don't destory a running node
+      // no op, don't destroy something we did not create.
    }
 }

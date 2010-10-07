@@ -14,33 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jboss.arquillian.container.jclouds;
+package org.jboss.arquillian.container.jclouds.spi;
 
-import org.jboss.arquillian.container.jclouds.pool.ObjectPool;
-import org.jboss.arquillian.container.jclouds.pool.PooledObject;
+import org.jboss.shrinkwrap.api.Archive;
+import org.jclouds.ssh.SshClient;
 
 /**
- * NodeOverview
+ * CloudDeployer
  *
  * @author <a href="mailto:aslak@redhat.com">Aslak Knutsen</a>
  * @version $Revision: $
  */
-public class NodeOverview
+public interface CloudDeployer
 {
-   private ObjectPool<ConnectedNodeMetadata> pool;
-
-   public NodeOverview(ObjectPool<ConnectedNodeMetadata> pool)
-   {
-      this.pool = pool;
-   }
+   void deploy(SshClient client, Archive<?> archive);
    
-   public PooledObject<ConnectedNodeMetadata> getNode()
-   {
-      return pool.get();
-   }
-   
-   public void shutdownAll()
-   {
-      pool.shutdown();
-   }
+   void undeploy(SshClient client, Archive<?> archive);
 }

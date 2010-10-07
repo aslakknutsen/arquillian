@@ -14,33 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jboss.arquillian.container.jclouds;
+package org.jboss.arquillian.container.jclouds.spi;
 
-import org.jboss.arquillian.container.jclouds.pool.ObjectPool;
-import org.jboss.arquillian.container.jclouds.pool.PooledObject;
+import org.jboss.arquillian.container.jclouds.JCloudsConfiguration;
+import org.jclouds.compute.ComputeService;
+import org.jclouds.compute.domain.Template;
 
 /**
- * NodeOverview
+ * TemplateCreator
  *
  * @author <a href="mailto:aslak@redhat.com">Aslak Knutsen</a>
  * @version $Revision: $
  */
-public class NodeOverview
+public interface TemplateCreator
 {
-   private ObjectPool<ConnectedNodeMetadata> pool;
-
-   public NodeOverview(ObjectPool<ConnectedNodeMetadata> pool)
-   {
-      this.pool = pool;
-   }
-   
-   public PooledObject<ConnectedNodeMetadata> getNode()
-   {
-      return pool.get();
-   }
-   
-   public void shutdownAll()
-   {
-      pool.shutdown();
-   }
+   Template createTemplate(JCloudsConfiguration config, ComputeService computeService);
 }

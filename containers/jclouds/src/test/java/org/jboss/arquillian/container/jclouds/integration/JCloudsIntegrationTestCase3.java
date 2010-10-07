@@ -14,33 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jboss.arquillian.container.jclouds;
+package org.jboss.arquillian.container.jclouds.integration;
 
-import org.jboss.arquillian.container.jclouds.pool.ObjectPool;
-import org.jboss.arquillian.container.jclouds.pool.PooledObject;
 
 /**
- * NodeOverview
+ * JCloudsIntegrationTestCase
  *
  * @author <a href="mailto:aslak@redhat.com">Aslak Knutsen</a>
  * @version $Revision: $
  */
-public class NodeOverview
+public class JCloudsIntegrationTestCase3 extends JCloudsIntegrationTestBase
 {
-   private ObjectPool<ConnectedNodeMetadata> pool;
-
-   public NodeOverview(ObjectPool<ConnectedNodeMetadata> pool)
-   {
-      this.pool = pool;
-   }
-   
-   public PooledObject<ConnectedNodeMetadata> getNode()
-   {
-      return pool.get();
-   }
-   
-   public void shutdownAll()
-   {
-      pool.shutdown();
-   }
 }

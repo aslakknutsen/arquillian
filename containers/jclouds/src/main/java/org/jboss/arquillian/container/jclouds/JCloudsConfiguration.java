@@ -16,6 +16,7 @@
  */
 package org.jboss.arquillian.container.jclouds;
 
+import java.util.Properties;
 import java.util.UUID;
 
 import org.jboss.arquillian.container.jclouds.pool.ObjectPool.UsedObjectStrategy;
@@ -30,6 +31,15 @@ import org.jboss.arquillian.spi.ContainerProfile;
  */
 public class JCloudsConfiguration implements ContainerConfiguration
 {
+   public enum Mode 
+   {
+      ACTIVE_NODE,
+      ACTIVE_NODE_POOL,
+      CONFIGURED_IMAGE,
+      BUILD_NODE,
+   }   
+
+   private Mode mode = Mode.BUILD_NODE;
    
    /**
     * The JClouds Provider name to use
@@ -77,24 +87,19 @@ public class JCloudsConfiguration implements ContainerConfiguration
    private String nodeId = null;
    
    /**
-    * 
+    * The identity to use for logging into the node.
     */
-   private UsedObjectStrategy usedObjectStrategy = UsedObjectStrategy.REUSE;
-
-   /**
-    * The ID of the image to start. 
-    */
-   private String imageId;
-   
-   /**
-    * Run against a specific node. 
-    */
-   private String nodeId = null;
+   private String nodeIdentity = null;
    
    /**
     * Port opened up to the server and used by the Servlet Protocol.
     */
    private int remoteServerHttpPort = 8080;
+   
+   /**
+    * JClouds ComputeContext properties 
+    */
+   private String overrides;
 
    /* (non-Javadoc)
     * @see org.jboss.arquillian.spi.ContainerConfiguration#getContainerProfile()
@@ -102,6 +107,22 @@ public class JCloudsConfiguration implements ContainerConfiguration
    public ContainerProfile getContainerProfile()
    {
       return ContainerProfile.CLIENT;
+   }
+
+   /**
+    * @param mode the mode to set
+    */
+   public void setMode(String mode)
+   {
+      this.mode = Mode.valueOf(mode);
+   }
+   
+   /**
+    * @return the mode
+    */
+   public Mode getMode()
+   {
+      return mode;
    }
    
    /**
@@ -265,9 +286,79 @@ public class JCloudsConfiguration implements ContainerConfiguration
       this.nodeId = nodeId;
    }
    
-   public boolean useRunningNode()
+   /**
+    * @return the nodeIdentity
+    */
+   public String getNodeIdentity()
    {
-      return nodeId != null;
+      return nodeIdentity;
    }
    
+   /**
+    * @param nodeIdentity the nodeIdentity to set
+    */
+   public void setNodeIdentity(String nodeIdentity)
+   {
+      this.nodeIdentity = nodeIdentity;
+   }
+   
+   /**
+    * @param properties the properties to set
+    */
+   public void setOverrides(String properties)
+   {
+      this.overrides = properties;
+   }
+   
+   /**
+    * @return the properties
+    */
+   public Properties getOverrides()
+   {
+      Properties props = new Properties();
+      for(String propsSplitted : overrides.split(","))
+      {
+         String[] propSplitted = propsSplitted.split("=");
+         if(propSplitted.length == 1)
+         {
+            props.put(propSplitted[0], "");
+         }
+         else
+         {
+            props.put(propSplitted[0], propSplitted[1]);
+         }
+      }
+      return props;
+   }
+
+   public void validate() throws IllegalArgumentException 
+   {
+      switch (mode)
+      {
+         case ACTIVE_NODE_POOL :
+            notNull(tag, "Tag must be specified");
+            break;
+         case ACTIVE_NODE :
+            notNull(nodeId, "NodeId must be specified");
+            break;
+         case CONFIGURED_IMAGE:
+            notNull(imageId, "ImageId must be specified");
+            break;
+         case BUILD_NODE:
+            break;
+      }
+      
+      notNull(provider, "Provider must be specified");
+      notNull(identity, "Identity must be specified");
+      notNull(credential, "Credential must be specified");
+      notNull(certificate, "Certificate must be specified");
+   }
+   
+   private void notNull(Object obj, String message)
+   {
+      if(obj == null)
+      {
+         throw new IllegalArgumentException(message);
+      }
+   }
 }

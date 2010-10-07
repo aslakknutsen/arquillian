@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<arquillian xmlns="http://jboss.com/arquillian"
+   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+   xmlns:cloud="urn:arq:org.jboss.arquillian.container.jclouds">
+
+   <!-- Uncomment to have test archives exported to the file system for inspection -->
+   <!--
+   <engine>
+      <deploymentExportPath>/tmp/</deploymentExportPath>
+   </engine>
+   -->
+
+   <cloud:container>
+      <cloud:provider>ec2</cloud:provider>
+      <cloud:identity>AKIAIJIZRJY3WKAQG75A</cloud:identity>
+      <cloud:credential>k+ucrq/Yyyoo7sR45VViC+7ag+gDWW7xHUnrIDhN</cloud:credential>
+      <!-- <cloud:nodeId>us-east-1/i-23ebe449</cloud:nodeId> -->
+      <!-- <cloud:nodeId>us-east-1/i-23ebe449</cloud:nodeId> -->
+      <cloud:nodeCount>2</cloud:nodeCount> 
+      <cloud:certificate>/home/aslak/.ec2/arquillian</cloud:certificate> <!-- needs a certificate.pub as well located in same location -->
+   </cloud:container>
+
+</arquillian>
