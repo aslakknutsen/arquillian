@@ -34,7 +34,6 @@ import org.testng.annotations.Test;
  */
 public class JCloudsIntegrationTestBase extends Arquillian
 {
-
    @Deployment
    public static JavaArchive createDeployment() 
    {
@@ -48,6 +47,38 @@ public class JCloudsIntegrationTestBase extends Arquillian
    
    @Test
    public void shouldBeAbleToExecuteAndInject() throws Exception
+   {
+      Assert.assertNotNull(manager);
+      
+      Assert.assertEquals("Hello", manager.sayHello());
+   }
+
+   @Test
+   public void shouldBeAbleToExecuteAndInject2() throws Exception
+   {
+      Assert.assertNotNull(manager);
+      
+      Assert.assertEquals("Hello", manager.sayHello());
+   }
+
+   @Test
+   public void shouldBeAbleToExecuteAndInject3() throws Exception
+   {
+      Assert.assertNotNull(manager);
+      
+      Assert.assertEquals("Hello", manager.sayHello());
+   }
+
+   @Test
+   public void shouldBeAbleToExecuteAndInject4() throws Exception
+   {
+      Assert.assertNotNull(manager);
+      
+      Assert.assertEquals("Hello", manager.sayHello());
+   }
+
+   @Test
+   public void shouldBeAbleToExecuteAndInject5() throws Exception
    {
       Assert.assertNotNull(manager);
       

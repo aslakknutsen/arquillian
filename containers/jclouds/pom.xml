@@ -112,7 +112,7 @@
 		<!-- Test -->
 		<dependency>
 			<groupId>org.jboss.arquillian</groupId>
-			<artifactId>arquillian-junit</artifactId>
+			<artifactId>arquillian-testng</artifactId>
 			<version>${project.version}</version>
 			<scope>test</scope>
 		</dependency>
@@ -121,10 +121,19 @@
 			<artifactId>mockito-all</artifactId>
 			<scope>test</scope>
 		</dependency>
+
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
 			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.testng</groupId>
+			<artifactId>testng</artifactId>
+			<scope>test</scope>
+			<version>5.12.1</version>
+			<classifier>noguice</classifier>
 		</dependency>
 
 		<dependency>

@@ -20,8 +20,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.jboss.arquillian.testng.testspi.MultiThreadedPrClassTestCase.TestCase1;
-import org.jboss.arquillian.testng.testspi.MultiThreadedPrClassTestCase.TestCase2;
 import org.junit.Test;
 import org.testng.TestNG;
 import org.testng.internal.AnnotationTypeEnum;
@@ -42,11 +40,15 @@ public class TestNGSuiteRunner
    public void shouldRun() 
    {
       TestNG runner = new TestNG();
-      runner.setVerbose(3);
+      runner.setVerbose(2);
       runner.setXmlSuites(
             Arrays.asList(createSuite(
-                  JCloudsIntegrationTestCase1.class, 
-                  JCloudsIntegrationTestCase2.class)));
+                  JCloudsIntegrationTestCase1.class,
+                  JCloudsIntegrationTestCase2.class,
+                  JCloudsIntegrationTestCase3.class,
+                  JCloudsIntegrationTestCase4.class,
+                  JCloudsIntegrationTestCase5.class
+                  )));
    
       runner.run();
    }
@@ -57,7 +59,7 @@ public class TestNGSuiteRunner
       suite.setName("Arquillian");
       suite.setAnnotations(AnnotationTypeEnum.JDK.getName());
       suite.setParallel("classes");
-      suite.setThreadCount(2);
+      suite.setThreadCount(5);
       XmlTest test = new XmlTest(suite);
       test.setName("Arquillian - Test");
       List<XmlClass> testClasses = new ArrayList<XmlClass>();

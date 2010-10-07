@@ -2,8 +2,9 @@
 
 <suite name="Suite1" verbose="1" parallel="classes" thread-count="2">
 	<test name="MultiThreadedClasses">
-		<packages>
-			<package name="org.jboss.arquillian.container.jclouds.integration" />
-		</packages>
+		<classes>
+			<class name="org.jboss.arquillian.container.jclouds.integration.JCloudsIntegrationTestCase1" />
+			<class name="org.jboss.arquillian.container.jclouds.integration.JCloudsIntegrationTestCase2" />
+		</classes>
 	</test>
 </suite>
