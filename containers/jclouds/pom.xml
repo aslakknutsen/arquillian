@@ -133,9 +133,7 @@
 			<artifactId>testng</artifactId>
 			<scope>test</scope>
 			<version>5.12.1</version>
-<!--
 			<classifier>noguice</classifier>
--->
 		</dependency>
 
 		<dependency>

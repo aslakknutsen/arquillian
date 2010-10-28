@@ -26,38 +26,19 @@
 <!-- 
 		<cloud:mode>BUILD_NODE</cloud:mode> 
 -->
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+<!--
+	<cloud:container>
+		<cloud:provider>gogrid</cloud:provider>
+		<cloud:identity>XXXXXXXXX</cloud:identity>
+		<cloud:credential>XXXXXXXXXXX</cloud:credential>
+		<cloud:mode>BUILD_NODE</cloud:mode> 
+		<cloud:certificate>/Users/adriancole/.ssh/id_rsa</cloud:certificate>
+		<cloud:overrides>jclouds.ec2.ami-owners=</cloud:overrides>
+		<cloud:nodeIdentity>root</cloud:nodeIdentity>
+		<cloud:nodeCount>1</cloud:nodeCount>
+		<cloud:tag>adrian</cloud:tag>
+	</cloud:container>
+-->
 		<cloud:identity>AKIAIJIZRJY3WKAQG75A</cloud:identity>
 		<cloud:credential>k+ucrq/Yyyoo7sR45VViC+7ag+gDWW7xHUnrIDhN</cloud:credential>
 
