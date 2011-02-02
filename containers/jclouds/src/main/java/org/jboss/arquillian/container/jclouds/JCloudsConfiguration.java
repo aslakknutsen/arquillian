@@ -177,7 +177,7 @@ public class JCloudsConfiguration implements ContainerConfiguration
    /**
     * @return the group
     */
-   public String getTag()
+   public String getGroup()
    {
       return group;
    }
@@ -185,7 +185,7 @@ public class JCloudsConfiguration implements ContainerConfiguration
    /**
     * @param group the group to set
     */
-   public void setTag(String group)
+   public void setGroup(String group)
    {
       this.group = group;
    }

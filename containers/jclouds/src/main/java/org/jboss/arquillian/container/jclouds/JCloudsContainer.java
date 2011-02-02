@@ -118,14 +118,14 @@ public class JCloudsContainer implements DeployableContainer {
             // nodes
             poolSize = 1; // force pool size of 1, we're using a specific node id
          } else if (Mode.ACTIVE_NODE_POOL == config.getMode()) {
-            creator = new ExistingPoolConnectedNodeCreator(computeContext, config.getTag())
+            creator = new ExistingPoolConnectedNodeCreator(computeContext, config.getGroup())
                   .setLoginCredentials(credentialsFromConfig(config));
 
             usageStrategy = UsedObjectStrategy.REUSE; // force reuse, we should not destroy running
                                                       // nodes
          } else {
             creator = new CreateNodesOnDemandConnectedNodeCreator(computeContext, context.get(Template.class),
-                  config.getTag()).setLoginCredentials(credentialsFromConfig(config));
+                  config.getGroup()).setLoginCredentials(credentialsFromConfig(config));
          }
          ObjectPool<ConnectedNode> pool = new ObjectPool<ConnectedNode>(creator, poolSize, usageStrategy);
 
