@@ -3,7 +3,7 @@
 	xmlns:cloud="urn:arq:org.jboss.arquillian.container.jclouds">
 
 	<cloud:container>
-		<cloud:provider>ec2</cloud:provider>
+		<cloud:provider>aws-ec2</cloud:provider>
 <!-- 
 		<cloud:identity>xxxxxxA</cloud:identity>
 		<cloud:credential>xxxxxxxxxxx</cloud:credential>
@@ -14,7 +14,7 @@
 		<cloud:overrides>jclouds.ec2.ami-owners=</cloud:overrides>
 
 		<cloud:mode>ACTIVE_NODE_POOL</cloud:mode>
-		<cloud:tag>aslak</cloud:tag>
+		<cloud:group>aslak</cloud:group>
 <!-- 
 		<cloud:mode>ACTIVE_NODE</cloud:mode> 
 		<cloud:nodeId>us-east-1/i-07c8d46d</cloud:nodeId> 
@@ -36,11 +36,11 @@
 		<cloud:overrides>jclouds.ec2.ami-owners=</cloud:overrides>
 		<cloud:nodeIdentity>root</cloud:nodeIdentity>
 		<cloud:nodeCount>1</cloud:nodeCount>
-		<cloud:tag>adrian</cloud:tag>
+		<cloud:group>adrian</cloud:group>
 	</cloud:container>
 -->
-		<cloud:identity>AKIAIJIZRJY3WKAQG75A</cloud:identity>
-		<cloud:credential>k+ucrq/Yyyoo7sR45VViC+7ag+gDWW7xHUnrIDhN</cloud:credential>
+		<cloud:identity>XXXXXXXXX</cloud:identity>
+		<cloud:credential>XXXXXXXXX</cloud:credential>
 
 	</cloud:container>
 

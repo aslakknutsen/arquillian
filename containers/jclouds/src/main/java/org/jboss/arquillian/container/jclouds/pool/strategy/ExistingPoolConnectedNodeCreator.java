@@ -33,13 +33,13 @@ import com.google.common.base.Predicate;
  * @author <a href="mailto:aslak@redhat.com">Aslak Knutsen</a>
  */
 public class ExistingPoolConnectedNodeCreator extends ConnectedNodeCreator {
-   private String tag;
+   private String group;
 
    private Iterator<? extends ComputeMetadata> foundNodes;
 
-   public ExistingPoolConnectedNodeCreator(ComputeServiceContext context, String tag) {
+   public ExistingPoolConnectedNodeCreator(ComputeServiceContext context, String group) {
       super(context);
-      this.tag = tag;
+      this.group = group;
    }
 
    @Override
@@ -51,7 +51,7 @@ public class ExistingPoolConnectedNodeCreator extends ConnectedNodeCreator {
                      public boolean apply(ComputeMetadata input) {
                         if (input instanceof NodeMetadata) {
                            NodeMetadata nodeMetadata = (NodeMetadata) input;
-                           if (tag.equals(nodeMetadata.getTag()) && nodeMetadata.getState() == NodeState.RUNNING) {
+                           if (group.equals(nodeMetadata.getGroup()) && nodeMetadata.getState() == NodeState.RUNNING) {
                               return true;
                            }
                         }

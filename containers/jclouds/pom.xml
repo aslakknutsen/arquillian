@@ -67,18 +67,23 @@
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
-			<groupId>org.jclouds</groupId>
+			<groupId>org.jclouds.driver</groupId>
 			<artifactId>jclouds-log4j</artifactId>
 			<version>${version.jclouds_core}</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
-			<groupId>org.jclouds</groupId>
+			<groupId>org.jclouds.driver</groupId>
 			<artifactId>jclouds-jsch</artifactId>
 			<version>${version.jclouds_core}</version>
 			<scope>provided</scope>
 		</dependency>
-
+        <dependency>
+            <groupId>com.jcraft</groupId>
+            <artifactId>jsch</artifactId>
+            <version>0.1.42</version>
+     	    <scope>provided</scope>
+        </dependency>
 		<dependency>
 			<groupId>log4j</groupId>
 			<artifactId>log4j</artifactId>
@@ -133,7 +138,6 @@
 			<artifactId>testng</artifactId>
 			<scope>test</scope>
 			<version>5.12.1</version>
-			<classifier>noguice</classifier>
 		</dependency>
 
 		<dependency>

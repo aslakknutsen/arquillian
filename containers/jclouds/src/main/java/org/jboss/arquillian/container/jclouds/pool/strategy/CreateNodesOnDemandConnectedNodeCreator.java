@@ -28,18 +28,18 @@ import org.jclouds.compute.domain.Template;
  */
 public class CreateNodesOnDemandConnectedNodeCreator extends ConnectedNodeCreator {
    private Template template;
-   private String tag;
+   private String group;
 
-   public CreateNodesOnDemandConnectedNodeCreator(ComputeServiceContext context, Template template, String tag) {
+   public CreateNodesOnDemandConnectedNodeCreator(ComputeServiceContext context, Template template, String group) {
       super(context);
       this.template = template;
-      this.tag = tag;
+      this.group = group;
    }
 
    @Override
    public NodeMetadata createNode() {
       try {
-         return getComputeContext().getComputeService().runNodesWithTag(tag, 1, template).iterator().next();
+         return getComputeContext().getComputeService().createNodesInGroup(group, 1, template).iterator().next();
       } catch (RunNodesException e) {
          throw new RuntimeException(e);
       }

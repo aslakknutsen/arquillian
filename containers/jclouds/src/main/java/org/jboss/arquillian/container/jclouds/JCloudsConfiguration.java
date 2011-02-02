@@ -64,7 +64,7 @@ public class JCloudsConfiguration implements ContainerConfiguration
    /**
     * The name of the nodes to start
     */
-   private String tag = UUID.randomUUID().toString().replaceAll("-", "");
+   private String group = UUID.randomUUID().toString().replaceAll("-", "");
    
    /**
     * The number of nodes to start
@@ -175,19 +175,19 @@ public class JCloudsConfiguration implements ContainerConfiguration
    
    
    /**
-    * @return the tag
+    * @return the group
     */
    public String getTag()
    {
-      return tag;
+      return group;
    }
    
    /**
-    * @param tag the tag to set
+    * @param group the group to set
     */
-   public void setTag(String tag)
+   public void setTag(String group)
    {
-      this.tag = tag;
+      this.group = group;
    }
    
    /**
@@ -336,7 +336,7 @@ public class JCloudsConfiguration implements ContainerConfiguration
       switch (mode)
       {
          case ACTIVE_NODE_POOL :
-            notNull(tag, "Tag must be specified");
+            notNull(group, "Tag must be specified");
             break;
          case ACTIVE_NODE :
             notNull(nodeId, "NodeId must be specified");

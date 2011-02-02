@@ -24,7 +24,7 @@ import org.jclouds.compute.domain.NodeMetadata;
 import org.jclouds.compute.domain.NodeMetadataBuilder;
 import org.jclouds.domain.Credentials;
 import org.jclouds.ssh.SshClient;
-import org.jclouds.util.Utils;
+import org.jclouds.util.CredentialUtils;
 
 import com.google.common.base.Function;
 
@@ -42,7 +42,7 @@ public class ConnectedNode {
          NodeMetadata nodeMetadata, @Nullable Credentials overridingLoginCredentials) {
       this.nodeMetadata = NodeMetadataBuilder
             .fromNodeMetadata(checkNotNull(nodeMetadata, "nodeMetadata"))
-            .credentials(Utils.overrideCredentialsIfSupplied(nodeMetadata.getCredentials(), overridingLoginCredentials))
+            .credentials(CredentialUtils.overrideCredentialsIfSupplied(nodeMetadata.getCredentials(), overridingLoginCredentials))
             .build();
       this.sshClient = createSshClientOncePortIsListeningOnNode.apply(nodeMetadata);
    }
