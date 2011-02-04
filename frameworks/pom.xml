@@ -27,6 +27,7 @@
   <modules>
     
 <!--    <module>cobertura</module> -->
+	<module>byteman</module>
   </modules>
 
 </project>

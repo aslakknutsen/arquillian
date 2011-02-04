@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8"?>
+	<!--
+  vi:ts=2:sw=2:expandtab:
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+	<!-- Parent -->
+	<parent>
+		<groupId>org.jboss.arquillian</groupId>
+		<artifactId>arquillian-build</artifactId>
+		<version>1.0.0-SNAPSHOT</version>
+		<relativePath>../../build/pom.xml</relativePath>
+	</parent>
+
+	<!-- Model Version -->
+	<modelVersion>4.0.0</modelVersion>
+
+	<!-- Artifact Configuration -->
+	<groupId>org.jboss.arquillian.framework</groupId>
+	<artifactId>arquillian-framework-byteman</artifactId>
+	<name>Arquillian Framework Byteman</name>
+	<description>Byteman integration for the Arquillian project</description>
+
+
+	<!-- Properties -->
+	<properties>
+
+		<version.jboss_60>6.0.0.Final</version.jboss_60>
+		<version.byteman>1.4.2-SNAPSHOT</version.byteman>
+
+	</properties>
+
+	<!-- Dependencies -->
+	<dependencies>
+
+		<!-- 
+    org.jboss.arquillian
+     -->
+		<dependency>
+			<groupId>org.jboss.arquillian</groupId>
+			<artifactId>arquillian-spi</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.jboss.shrinkwrap</groupId>
+			<artifactId>shrinkwrap-impl-base</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.jboss.shrinkwrap</groupId>
+			<artifactId>shrinkwrap-spi</artifactId>
+		</dependency>
+
+		<!-- 
+    org.joss.byteman
+     -->
+
+		<dependency>
+			<groupId>org.jboss.byteman</groupId>
+			<artifactId>byteman</artifactId>
+			<version>${version.byteman}</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.jboss.byteman</groupId>
+			<artifactId>byteman-install</artifactId>
+			<version>${version.byteman}</version>
+			<scope>provided</scope>
+		</dependency>
+<!-- 
+		<dependency>
+			<groupId>org.jboss.byteman</groupId>
+			<artifactId>byteman-submit</artifactId>
+			<version>${version.byteman}</version>
+			<scope>provided</scope>
+		</dependency>
+-->
+	<!-- 
+		Test
+	 -->
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.jboss.arquillian</groupId>
+			<artifactId>arquillian-junit</artifactId>
+			<version>${project.version}</version>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.jboss.arquillian.container</groupId>
+			<artifactId>arquillian-jbossas-remote-6</artifactId>
+			<version>${project.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.jboss.jbossas</groupId>
+			<artifactId>jboss-as-client</artifactId>
+			<version>${version.jboss_60}</version>
+			<type>pom</type>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>javax.enterprise</groupId>
+			<artifactId>cdi-api</artifactId>
+			<version>1.0-SP1</version>
+			<scope>test</scope>
+		</dependency>
+
+	</dependencies>
+
+	<build>
+		<plugins>
+			<!-- Surefire -->
+			<plugin>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<configuration>
+					<!-- Skip Tests in main build due to bug in JSFUnit -->
+					<skip>true</skip>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+</project>
+
