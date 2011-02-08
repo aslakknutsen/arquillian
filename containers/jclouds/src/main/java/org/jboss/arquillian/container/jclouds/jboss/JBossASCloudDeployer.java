@@ -36,8 +36,8 @@ public class JBossASCloudDeployer implements CloudDeployer
     */
    public void deploy(SshClient client, Archive<?> archive)
    {
-      Payload toSend = Payloads.newInputStreamPayload(archive.as(ZipExporter.class).exportZip());
       long start = System.currentTimeMillis();
+      Payload toSend = Payloads.newInputStreamPayload(archive.as(ZipExporter.class).exportAsInputStream());
       client.put(archive.getName(), toSend);
       System.out.println("upload: " + (System.currentTimeMillis() - start));
       

@@ -16,16 +16,17 @@
  */
 package org.jboss.arquillian.container.jclouds.pool.strategy;
 
+
 import java.util.Iterator;
 
 import org.jboss.arquillian.container.jclouds.pool.ConnectedNodeCreator;
 import org.jboss.arquillian.container.jclouds.pool.Creator;
 import org.jclouds.compute.ComputeServiceContext;
-import org.jclouds.compute.domain.ComputeMetadata;
 import org.jclouds.compute.domain.NodeMetadata;
-import org.jclouds.compute.domain.NodeState;
+import org.jclouds.compute.predicates.NodePredicates;
 
-import com.google.common.base.Predicate;
+import com.google.common.base.Predicates;
+import com.google.common.collect.Iterables;
 
 /**
  * A {@link Creator} that can match up against
@@ -35,7 +36,7 @@ import com.google.common.base.Predicate;
 public class ExistingPoolConnectedNodeCreator extends ConnectedNodeCreator {
    private String group;
 
-   private Iterator<? extends ComputeMetadata> foundNodes;
+   private Iterator<? extends NodeMetadata> foundNodes;
 
    public ExistingPoolConnectedNodeCreator(ComputeServiceContext context, String group) {
       super(context);
@@ -46,18 +47,9 @@ public class ExistingPoolConnectedNodeCreator extends ConnectedNodeCreator {
    public NodeMetadata createNode() {
       synchronized (this) {
          if (foundNodes == null) {
-            foundNodes = getComputeContext().getComputeService()
-                  .listNodesDetailsMatching(new Predicate<ComputeMetadata>() {
-                     public boolean apply(ComputeMetadata input) {
-                        if (input instanceof NodeMetadata) {
-                           NodeMetadata nodeMetadata = (NodeMetadata) input;
-                           if (group.equals(nodeMetadata.getGroup()) && nodeMetadata.getState() == NodeState.RUNNING) {
-                              return true;
-                           }
-                        }
-                        return false;
-                     }
-                  }).iterator();
+            foundNodes = (Iterator<? extends NodeMetadata>)Iterables.filter(
+                              getComputeContext().getComputeService().listNodesDetailsMatching(NodePredicates.all()),
+                              Predicates.and(NodePredicates.inGroup(group), Predicates.not(NodePredicates.TERMINATED)));
          }
          if (foundNodes.hasNext()) {
             return (NodeMetadata) foundNodes.next();

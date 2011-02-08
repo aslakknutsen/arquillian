@@ -18,29 +18,32 @@ package org.jboss.arquillian.container.jclouds;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URL;
 
-import org.jboss.arquillian.container.jclouds.JCloudsConfiguration.Mode;
 import org.jboss.arquillian.container.jclouds.jboss.JBossASCloudDeployer;
 import org.jboss.arquillian.container.jclouds.pool.ConnectedNode;
 import org.jboss.arquillian.container.jclouds.pool.ConnectedNodePool;
 import org.jboss.arquillian.container.jclouds.pool.Creator;
 import org.jboss.arquillian.container.jclouds.pool.ObjectPool;
-import org.jboss.arquillian.container.jclouds.pool.PooledObject;
 import org.jboss.arquillian.container.jclouds.pool.ObjectPool.UsedObjectStrategy;
+import org.jboss.arquillian.container.jclouds.pool.PooledObject;
 import org.jboss.arquillian.container.jclouds.pool.strategy.CreateNodesOnDemandConnectedNodeCreator;
 import org.jboss.arquillian.container.jclouds.pool.strategy.ExistingPoolConnectedNodeCreator;
 import org.jboss.arquillian.container.jclouds.pool.strategy.SingletonExistingNodeCreator;
 import org.jboss.arquillian.container.jclouds.spi.CloudDeployer;
 import org.jboss.arquillian.container.jclouds.spi.TemplateCreator;
-import org.jboss.arquillian.protocol.servlet_3.ServletMethodExecutor;
-import org.jboss.arquillian.spi.Configuration;
-import org.jboss.arquillian.spi.ContainerMethodExecutor;
-import org.jboss.arquillian.spi.Context;
-import org.jboss.arquillian.spi.DeployableContainer;
-import org.jboss.arquillian.spi.DeploymentException;
-import org.jboss.arquillian.spi.LifecycleException;
+import org.jboss.arquillian.spi.ServiceLoader;
+import org.jboss.arquillian.spi.client.container.DeployableContainer;
+import org.jboss.arquillian.spi.client.container.DeploymentException;
+import org.jboss.arquillian.spi.client.container.LifecycleException;
+import org.jboss.arquillian.spi.client.protocol.ProtocolDescription;
+import org.jboss.arquillian.spi.client.protocol.metadata.ProtocolMetaData;
+import org.jboss.arquillian.spi.core.Instance;
+import org.jboss.arquillian.spi.core.InstanceProducer;
+import org.jboss.arquillian.spi.core.annotation.ContainerScoped;
+import org.jboss.arquillian.spi.core.annotation.DeploymentScoped;
+import org.jboss.arquillian.spi.core.annotation.Inject;
 import org.jboss.shrinkwrap.api.Archive;
+import org.jboss.shrinkwrap.descriptor.api.Descriptor;
 import org.jclouds.compute.ComputeService;
 import org.jclouds.compute.ComputeServiceContext;
 import org.jclouds.compute.ComputeServiceContextFactory;
@@ -60,77 +63,123 @@ import com.google.common.io.Files;
  * @author <a href="mailto:aslak@redhat.com">Aslak Knutsen</a>
  * @version $Revision: $
  */
-public class JCloudsContainer implements DeployableContainer {
-   /*
-    * (non-Javadoc)
-    * 
-    * @see org.jboss.arquillian.spi.DeployableContainer#setup(org.jboss.arquillian.spi.Context,
-    * org.jboss.arquillian.spi.Configuration)
-    */
-   public void setup(Context context, Configuration configuration) {
+public class JCloudsContainer implements DeployableContainer<JCloudsConfiguration> 
+{
+   private JCloudsConfiguration configuration;
+   
+   @Inject 
+   private Instance<ServiceLoader> serviceLoader;
+
+   @Inject @ContainerScoped
+   private InstanceProducer<CloudDeployer> cloudDeployer;
+   
+   @Inject @ContainerScoped
+   private InstanceProducer<ComputeServiceContext> computeContext;
+   
+   @Inject @ContainerScoped
+   private InstanceProducer<Template> template;
+
+   @Inject @ContainerScoped
+   private InstanceProducer<ConnectedNodePool> connectedNodePool;
+
+   @Inject @DeploymentScoped
+   private InstanceProducer<PooledObject<ConnectedNode>> pooledObject;
+   
+   @Override
+   public Class<JCloudsConfiguration> getConfigurationClass()
+   {
+      return JCloudsConfiguration.class;
+   }
+   
+   @Override
+   public ProtocolDescription getDefaultProtocol()
+   {
+      return new ProtocolDescription("Servlet 3.0");
+   }
+   
+   @Override
+   public void setup(JCloudsConfiguration configuration) 
+   {
       long start = System.currentTimeMillis();
-      JCloudsConfiguration config = configuration.getContainerConfig(JCloudsConfiguration.class);
-      config.validate();
+      this.configuration = configuration;
+      configuration.validate();
 
-      context.add(CloudDeployer.class,
-            context.getServiceLoader().onlyOne(CloudDeployer.class, JBossASCloudDeployer.class));
+      cloudDeployer.set(serviceLoader.get().onlyOne(CloudDeployer.class, JBossASCloudDeployer.class));
 
-      ComputeServiceContext computeContext = new ComputeServiceContextFactory().createContext(config.getProvider(),
-            config.getIdentity(), config.getCredential(),
-            ImmutableSet.of(new Log4JLoggingModule(), new JschSshClientModule()), config.getOverrides());
+      ComputeServiceContext computeContext = new ComputeServiceContextFactory().createContext(
+            configuration.getProvider(),
+            configuration.getIdentity(), 
+            configuration.getCredential(),
+            ImmutableSet.of(
+                  new Log4JLoggingModule(), 
+                  new JschSshClientModule()), 
+            configuration.getOverrides());
 
       // Bind the ComputeServiceContext to the Arquillian Context
-      context.add(ComputeServiceContext.class, computeContext);
+      this.computeContext.set(computeContext);
 
       // Don't create a template if we're in single running instance mode
-      if (Mode.BUILD_NODE == config.getMode() || Mode.CONFIGURED_IMAGE == config.getMode()) {
-         TemplateCreator templateCreator = context.getServiceLoader().onlyOne(TemplateCreator.class,
-               DefaultTemplateCreator.class);
-         ComputeService computeService = computeContext.getComputeService();
-         Template template = templateCreator.createTemplate(config, computeService);
-         context.add(Template.class, template);
+      switch(configuration.getMode())
+      {
+         case BUILD_NODE:
+         case CONFIGURED_IMAGE:
+         {
+            TemplateCreator templateCreator = serviceLoader.get().onlyOne(TemplateCreator.class,
+                  DefaultTemplateCreator.class);
+            ComputeService computeService = computeContext.getComputeService();
+            Template template = templateCreator.createTemplate(configuration, computeService);
+            this.template.set(template);
+            break;
+         }
       }
-
       System.out.println("setup: " + (System.currentTimeMillis() - start));
    }
 
-   /*
-    * (non-Javadoc)
-    * 
-    * @see org.jboss.arquillian.spi.DeployableContainer#start(org.jboss.arquillian.spi.Context)
-    */
-   public void start(Context context) throws LifecycleException {
+   @Override
+   public void start() throws LifecycleException 
+   {
       long start = System.currentTimeMillis();
 
-      JCloudsConfiguration config = context.get(Configuration.class).getContainerConfig(JCloudsConfiguration.class);
-      ComputeServiceContext computeContext = context.get(ComputeServiceContext.class);
+      ComputeServiceContext computeContext = this.computeContext.get();
 
       try {
          Creator<ConnectedNode> creator;
-         UsedObjectStrategy usageStrategy = config.getUsedObjectStrategy();
-         int poolSize = config.getNodeCount();
+         UsedObjectStrategy usageStrategy = configuration.getUsedObjectStrategy();
+         int poolSize = configuration.getNodeCount();
 
-         if (Mode.ACTIVE_NODE == config.getMode()) {
-            creator = new SingletonExistingNodeCreator(computeContext, config.getNodeId())
-                  .setLoginCredentials(credentialsFromConfig(config));
-            
-            usageStrategy = UsedObjectStrategy.REUSE; // force reuse, we should not destroy running
-            // nodes
-            poolSize = 1; // force pool size of 1, we're using a specific node id
-         } else if (Mode.ACTIVE_NODE_POOL == config.getMode()) {
-            creator = new ExistingPoolConnectedNodeCreator(computeContext, config.getGroup())
-                  .setLoginCredentials(credentialsFromConfig(config));
+         switch(configuration.getMode())
+         {
+            case ACTIVE_NODE:
+            {
+               creator = new SingletonExistingNodeCreator(computeContext, configuration.getNodeId())
+                              .setLoginCredentials(credentialsFromConfig(configuration));
+               usageStrategy = UsedObjectStrategy.REUSE; // force reuse, we should not destroy running nodes
+               poolSize = 1; // force pool size of 1, we're using a specific node id
+               break;
+            }
+            case ACTIVE_NODE_POOL:
+            {
+               creator = new ExistingPoolConnectedNodeCreator(computeContext, configuration.getGroup())
+                              .setLoginCredentials(credentialsFromConfig(configuration));
 
-            usageStrategy = UsedObjectStrategy.REUSE; // force reuse, we should not destroy running
-                                                      // nodes
-         } else {
-            creator = new CreateNodesOnDemandConnectedNodeCreator(computeContext, context.get(Template.class),
-                  config.getGroup()).setLoginCredentials(credentialsFromConfig(config));
+               usageStrategy = UsedObjectStrategy.REUSE; // force reuse, we should not destroy running nodes
+               break;
+            }
+            default:
+            {
+               creator = new CreateNodesOnDemandConnectedNodeCreator(
+                     computeContext, 
+                     template.get(),
+                     configuration.getGroup())
+                        .setLoginCredentials(credentialsFromConfig(configuration));
+            }
          }
          ObjectPool<ConnectedNode> pool = new ObjectPool<ConnectedNode>(creator, poolSize, usageStrategy);
 
-         context.add(ConnectedNodePool.class, new ConnectedNodePool(pool));
-      } catch (Exception e) {
+         connectedNodePool.set(new ConnectedNodePool(pool));
+      } 
+      catch (Exception e) 
+      {
          throw new LifecycleException("Could not start nodes", e);
       }
       System.out.println("start: " + (System.currentTimeMillis() - start));
@@ -141,72 +190,83 @@ public class JCloudsContainer implements DeployableContainer {
             Files.toString(new File(config.getCertificate()), Charsets.UTF_8));
    }
 
-   /*
-    * (non-Javadoc)
-    * 
-    * @see org.jboss.arquillian.spi.DeployableContainer#deploy(org.jboss.arquillian.spi.Context,
-    * org.jboss.shrinkwrap.api.Archive)
-    */
-   public ContainerMethodExecutor deploy(final Context context, final Archive<?> archive) throws DeploymentException {
+   @Override
+   public void deploy(Descriptor descriptor) throws DeploymentException
+   {
+      throw new UnsupportedOperationException("Deploy of Descriptor not supported");
+   }
+   
+   @Override
+   public void undeploy(Descriptor descriptor) throws DeploymentException
+   {
+      throw new UnsupportedOperationException("UnDeploy of Descriptor not supported");
+   }
+   
+   @Override
+   public ProtocolMetaData deploy(final Archive<?> archive) throws DeploymentException 
+   {
       long start = System.currentTimeMillis();
-      JCloudsConfiguration config = context.get(Configuration.class).getContainerConfig(JCloudsConfiguration.class);
-      ConnectedNodePool nodeOverview = context.get(ConnectedNodePool.class);
+      ConnectedNodePool nodeOverview = this.connectedNodePool.get();
 
       // grab a instance from the pool and add it to the Context so undeploy can get the same
       // instance.
       PooledObject<ConnectedNode> pooledMetadata = nodeOverview.getNode();
-      context.add(PooledObject.class, pooledMetadata);
+      this.pooledObject.set(pooledMetadata);
 
       ConnectedNode connectedNodeMetadata = pooledMetadata.get();
       NodeMetadata nodeMetadata = connectedNodeMetadata.getNodeMetadata();
 
-      try {
-         context.get(CloudDeployer.class).deploy(connectedNodeMetadata.getSshClient(), archive);
-      } catch (Exception e) {
+      try 
+      {
+         this.cloudDeployer.get().deploy(connectedNodeMetadata.getSshClient(), archive);
+      } 
+      catch (Exception e) 
+      {
          throw new DeploymentException("Could not deploy to node", e);
       }
 
       System.out.println("deploy: " + (System.currentTimeMillis() - start) + " " + Thread.currentThread().getName());
-      try {
+      try 
+      {
          String publicAddress = nodeMetadata.getPublicAddresses().iterator().next();
 
-         return new ServletMethodExecutor(new URL("http", publicAddress, config.getRemoteServerHttpPort(), "/"));
-      } catch (Exception e) {
+         //return new ServletMethodExecutor(new URL("http", publicAddress, config.getRemoteServerHttpPort(), "/"));
+         return new ProtocolMetaData();
+      } 
+      catch (Exception e) 
+      {
          throw new RuntimeException("Could not create ContianerMethodExecutor", e);
       }
    }
 
-   /*
-    * (non-Javadoc)
-    * 
-    * @see org.jboss.arquillian.spi.DeployableContainer#undeploy(org.jboss.arquillian.spi.Context,
-    * org.jboss.shrinkwrap.api.Archive)
-    */
-   public void undeploy(final Context context, final Archive<?> archive) throws DeploymentException {
+   @Override
+   public void undeploy(final Archive<?> archive) throws DeploymentException 
+   {
       long start = System.currentTimeMillis();
-      @SuppressWarnings("unchecked")
-      PooledObject<ConnectedNode> pooledMetadata = (PooledObject<ConnectedNode>) context.get(PooledObject.class);
+      PooledObject<ConnectedNode> pooledMetadata = this.pooledObject.get();
       ConnectedNode connectedNodeMetadata = pooledMetadata.get();
-      try {
-         context.get(CloudDeployer.class).undeploy(connectedNodeMetadata.getSshClient(), archive);
-      } catch (Exception e) {
+      try 
+      {
+         this.cloudDeployer.get().undeploy(connectedNodeMetadata.getSshClient(), archive);
+      } 
+      catch (Exception e) 
+      {
          throw new DeploymentException("Could not deploy to node", e);
-      } finally {
+      } 
+      finally 
+      {
          // return the node to the pool for reuse or destruction depending on the usage strategy
          pooledMetadata.close();
       }
       System.out.println("undeploy: " + (System.currentTimeMillis() - start) + " " + Thread.currentThread().getName());
    }
 
-   /*
-    * (non-Javadoc)
-    * 
-    * @see org.jboss.arquillian.spi.DeployableContainer#stop(org.jboss.arquillian.spi.Context)
-    */
-   public void stop(Context context) throws LifecycleException {
+   @Override
+   public void stop() throws LifecycleException 
+   {
       long start = System.currentTimeMillis();
-      ComputeServiceContext computeContext = context.get(ComputeServiceContext.class);
-      ConnectedNodePool nodeOverview = context.get(ConnectedNodePool.class);
+      ComputeServiceContext computeContext = this.computeContext.get();
+      ConnectedNodePool nodeOverview = this.connectedNodePool.get();
       nodeOverview.shutdownAll();
 
       computeContext.close();

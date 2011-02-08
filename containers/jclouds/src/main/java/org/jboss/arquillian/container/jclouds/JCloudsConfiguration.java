@@ -20,8 +20,7 @@ import java.util.Properties;
 import java.util.UUID;
 
 import org.jboss.arquillian.container.jclouds.pool.ObjectPool.UsedObjectStrategy;
-import org.jboss.arquillian.spi.ContainerConfiguration;
-import org.jboss.arquillian.spi.ContainerProfile;
+import org.jboss.arquillian.spi.client.container.ContainerConfiguration;
 
 /**
  * JCloudsConfiguration
@@ -100,14 +99,6 @@ public class JCloudsConfiguration implements ContainerConfiguration
     * JClouds ComputeContext properties 
     */
    private String overrides;
-
-   /* (non-Javadoc)
-    * @see org.jboss.arquillian.spi.ContainerConfiguration#getContainerProfile()
-    */
-   public ContainerProfile getContainerProfile()
-   {
-      return ContainerProfile.CLIENT;
-   }
 
    /**
     * @param mode the mode to set
@@ -316,6 +307,10 @@ public class JCloudsConfiguration implements ContainerConfiguration
    public Properties getOverrides()
    {
       Properties props = new Properties();
+      if(overrides == null)
+      {
+         return props;
+      }
       for(String propsSplitted : overrides.split(","))
       {
          String[] propSplitted = propsSplitted.split("=");
