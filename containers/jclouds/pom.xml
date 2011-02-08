@@ -24,7 +24,7 @@
 	<properties>
 
 		<!-- Versioning -->
-		<version.jclouds_core>1.0-SNAPSHOT</version.jclouds_core>
+		<version.jclouds_core>1.0-beta-9</version.jclouds_core>
 
 	</properties>
 
@@ -72,6 +72,7 @@
 			<version>${version.jclouds_core}</version>
 			<scope>provided</scope>
 		</dependency>
+
 		<dependency>
 			<groupId>org.jclouds.driver</groupId>
 			<artifactId>jclouds-jsch</artifactId>
@@ -149,7 +150,7 @@
 		<dependency>
 			<groupId>org.jboss.spec</groupId> 
 			<artifactId>jboss-javaee-6.0</artifactId> 
-   			<version>1.0.0.Beta7</version>
+   			<version>1.0.0.Final</version>
    			<type>pom</type>
    			<scope>test</scope> 
 		</dependency>
