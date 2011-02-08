@@ -34,9 +34,9 @@
       </activation>
       <modules>
         <module>servlet</module>
-        <module>jmx</module>
+       <!-- <module>jmx</module>
         <module>jmx-osgi</module>
-        <module>jmx-osgi-bundle</module>
+        <module>jmx-osgi-bundle</module> -->
       </modules>
     </profile>
 
