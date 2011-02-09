@@ -12,8 +12,8 @@ import java.util.Map;
 import org.jclouds.compute.domain.OperatingSystem;
 import org.jclouds.compute.predicates.OperatingSystemPredicates;
 import org.jclouds.scriptbuilder.InitBuilder;
-import org.jclouds.scriptbuilder.domain.AuthorizeRSAPublicKey;
 import org.jclouds.scriptbuilder.domain.Statement;
+import org.jclouds.scriptbuilder.domain.Statements;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -23,7 +23,7 @@ import com.google.common.collect.ImmutableMap;
  * @author Adrian Cole
  */
 public class RunScriptData {
-
+   
    private static String jbossHome = "/usr/local/jboss";
 
    public static Statement installJavaAndCurl(OperatingSystem os) {
@@ -37,36 +37,44 @@ public class RunScriptData {
          throw new IllegalArgumentException("don't know how to handle" + os.toString());
    }
 
-   public static Statement createScriptInstallAndStartJBoss(String publicKey, OperatingSystem os) {
+   public static Statement authorizePortInIpTables(int port) {
+      return Statements.newStatementList(// just in case iptables are being used, try to open 8080
+               exec("iptables -I INPUT 1 -p tcp --dport " + port + " -j ACCEPT"),//
+               // TODO gogrid rules only allow ports 22, 3389, 80 and 443.
+               // the above rule will be ignored, so we have to apply this
+               // directly
+               exec("iptables -I RH-Firewall-1-INPUT 1 -p tcp --dport " + port + " -j ACCEPT"),//
+               exec("iptables-save"));
+   }
+
+   public static Statement createScriptInstallAndStartJBoss(Statement precondition, OperatingSystem os) {
       Map<String, String> envVariables = ImmutableMap.of("jbossHome", jbossHome);
       Statement toReturn = new InitBuilder(
                "jboss",
                jbossHome,
                jbossHome,
                envVariables,
+               ImmutableList.<Statement> of(precondition,//
+                        installJavaAndCurl(os),//
+                        authorizePortInIpTables(8080),//
+                        extractTargzIntoDirectory(URI.create(System.getProperty("test.jboss-url",
+                                 "http://d19xvfg065k8li.cloudfront.net/jboss-6.0.0.Final.tar.gz")), "/usr/local"),//
+                        exec("{md} " + jbossHome), exec("mv /usr/local/jboss-*/* " + jbossHome),//
+                        exec("chmod -R oug+r+w " + jbossHome)),//
                ImmutableList
-                        .<Statement> of(
-                                 new AuthorizeRSAPublicKey(publicKey),//
-                                 installJavaAndCurl(os),//
-                                 // just in case iptables are being used, try to open 8080
-                                 exec("iptables -I INPUT 1 -p tcp --dport 8080 -j ACCEPT"),//
-                                 // TODO gogrid rules only allow ports 22, 3389, 80 and 443.
-                                 // the above rule will be ignored, so we have to apply this directly
-                                 exec("iptables -I RH-Firewall-1-INPUT 1 -p tcp --dport 8080 -j ACCEPT"),//
-                                 exec("iptables-save"),//
-                                 extractTargzIntoDirectory(
-                                          URI
-                                                   .create("http://commondatastorage.googleapis.com/jclouds-repo/jboss-as-distribution-6.0.0.20100911-M5.tar.gz"),
-                                          "/usr/local"), exec("{md} " + jbossHome), exec("mv /usr/local/jboss-*/* "
-                                          + jbossHome),//
-                                 exec("chmod -R oug+r+w " + jbossHome)),//
-               ImmutableList
-                        .<Statement> of(interpret("java -Xms128m -Xmx512m -XX:MaxPermSize=256m -Dorg.jboss.resolver.warning=true -Dsun.rmi.dgc.client.gcInterval=3600000 -Dsun.rmi.dgc.server.gcInterval=3600000 -Djava.endorsed.dirs=lib/endorsed -classpath bin/run.jar org.jboss.Main -b 0.0.0.0")));
+                        .<Statement> of(interpret("java -Xms128m -Xmx512m -XX:MaxPermSize=256m -Dorg.jboss.resolver.warning=true -Dsun.rmi.dgc.client.gcInterval=3600000 -Dsun.rmi.dgc.server.gcInterval=3600000 -Djava.endorsed.dirs=lib/endorsed -classpath bin/run.jar org.jboss.Main -c jbossweb-standalone -b 0.0.0.0")));
       return toReturn;
    }
 
+   public static String aptInstall = "apt-get install -f -y -qq --force-yes";
+
+   public static String installAfterUpdatingIfNotPresent(String cmd) {
+      String aptInstallCmd = aptInstall + " " + cmd;
+      return String.format("which %s || (%s || (apt-get update && %s))", cmd, aptInstallCmd, aptInstallCmd);
+   }
+
    public static final Statement APT_RUN_SCRIPT = newStatementList(//
-            exec("which curl || apt-get install -f -y -qq --force-yes curl"),//
+            exec(installAfterUpdatingIfNotPresent("curl")),//
             exec("(which java && java -fullversion 2>&1|egrep -q 1.6 ) ||"),//
             execHttpResponse(URI.create("http://whirr.s3.amazonaws.com/0.2.0-incubating-SNAPSHOT/sun/java/install")),//
             exec(new StringBuilder()//

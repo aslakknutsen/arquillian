@@ -16,15 +16,15 @@
  */
 package org.jboss.arquillian.container.jclouds.pool.strategy;
 
-
-import java.util.Iterator;
-
 import org.jboss.arquillian.container.jclouds.pool.ConnectedNodeCreator;
 import org.jboss.arquillian.container.jclouds.pool.Creator;
 import org.jclouds.compute.ComputeServiceContext;
 import org.jclouds.compute.domain.NodeMetadata;
+import org.jclouds.compute.domain.NodeMetadataBuilder;
 import org.jclouds.compute.predicates.NodePredicates;
+import org.jclouds.domain.Credentials;
 
+import com.google.common.base.Function;
 import com.google.common.base.Predicates;
 import com.google.common.collect.Iterables;
 
@@ -36,23 +36,46 @@ import com.google.common.collect.Iterables;
 public class ExistingPoolConnectedNodeCreator extends ConnectedNodeCreator {
    private String group;
 
-   private Iterator<? extends NodeMetadata> foundNodes;
+   private Iterable<? extends NodeMetadata> foundNodes;
+   private Credentials credentials;
 
    public ExistingPoolConnectedNodeCreator(ComputeServiceContext context, String group) {
       super(context);
       this.group = group;
    }
+   /**
+    * @param certificate
+    *           the certificate to set
+    */
+   public ConnectedNodeCreator setLoginCredentials(Credentials credentials) {
+      this.credentials = credentials;
+      return this;
+   }
+
 
    @Override
    public NodeMetadata createNode() {
       synchronized (this) {
          if (foundNodes == null) {
-            foundNodes = (Iterator<? extends NodeMetadata>)Iterables.filter(
-                              getComputeContext().getComputeService().listNodesDetailsMatching(NodePredicates.all()),
-                              Predicates.and(NodePredicates.inGroup(group), Predicates.not(NodePredicates.TERMINATED)));
+            foundNodes = Iterables.transform(
+                            Iterables.filter(
+                                getComputeContext().getComputeService().listNodesDetailsMatching(NodePredicates.all()),
+                                Predicates.and(NodePredicates.inGroup(group), Predicates.not(NodePredicates.TERMINATED))),
+                                new Function<NodeMetadata,NodeMetadata>(){
+
+                                 public NodeMetadata apply(NodeMetadata from) {
+                                    return NodeMetadataBuilder
+                                    .fromNodeMetadata(from)
+                                    .credentials(credentials)
+                                    .build();
+                                 }
+                               
+                            }
+                                
+                                );
          }
-         if (foundNodes.hasNext()) {
-            return (NodeMetadata) foundNodes.next();
+         if (Iterables.size(foundNodes) >0) {
+            return Iterables.get(foundNodes,0);
          } else {
             throw new RuntimeException("Requested more nodes in pool then found in cloud");
          }

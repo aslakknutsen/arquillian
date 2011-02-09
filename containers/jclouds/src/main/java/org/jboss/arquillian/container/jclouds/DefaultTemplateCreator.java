@@ -21,12 +21,13 @@ import static org.jclouds.compute.options.TemplateOptions.Builder.blockOnComplet
 import java.io.File;
 import java.io.IOException;
 
+import org.jboss.arquillian.container.jclouds.JCloudsConfiguration.Mode;
 import org.jboss.arquillian.container.jclouds.spi.TemplateCreator;
 import org.jclouds.compute.ComputeService;
 import org.jclouds.compute.domain.Template;
 import org.jclouds.compute.domain.TemplateBuilder;
-import org.jclouds.compute.options.TemplateOptions;
 import org.jclouds.scriptbuilder.domain.AuthorizeRSAPublicKey;
+import org.jclouds.scriptbuilder.domain.Statement;
 
 import com.google.common.base.Charsets;
 import com.google.common.base.Throwables;
@@ -50,35 +51,46 @@ public class DefaultTemplateCreator implements TemplateCreator
                   blockOnComplete(false).blockOnPort(config.getRemoteServerHttpPort(), 300)
                   .inboundPorts(22, config.getRemoteServerHttpPort()));
 
-      String authorizeKey = null;
+      Statement authorizeKey = null;
       try
       {
-         authorizeKey = Files.toString(new File(config.getCertificate() + ".pub"), Charsets.UTF_8);
+         authorizeKey = new AuthorizeRSAPublicKey(
+               Files.toString(new File(config.getCertificate() + ".pub"), Charsets.UTF_8));
       }
       catch (IOException e)
       {
          Throwables.propagate(e);
+         return null;
       }
 
       // use a user defined image if specified
       if(config.getImageId() != null)
       {
-         templateBuilder.imageId(config.getImageId())
-            .options(TemplateOptions.Builder.runScript(new AuthorizeRSAPublicKey(authorizeKey)));
-         
+         templateBuilder.imageId(config.getImageId());
       }
-      Template template = templateBuilder.build();
       
-      // if no image is defined, we run the install routine
-      if(config.getImageId() == null)
+      // use a user defined location if specified
+      if(config.getLocationId() != null)
+      {
+         templateBuilder.locationId(config.getLocationId());
+      }
+      
+      Template template = templateBuilder.build();
+
+      if(config.getMode() == Mode.BUILD_NODE)
       {
          // note this is a dependency on the template resolution
          template.getOptions().runScript(
                RunScriptData.createScriptInstallAndStartJBoss(
                      authorizeKey,
                      template.getImage().getOperatingSystem()));
-   
+
       }
+      else
+      {
+         template.getOptions().runScript(authorizeKey);
+      }
+      
       return template;
    }
 }

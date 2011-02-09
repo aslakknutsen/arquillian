@@ -85,19 +85,16 @@ public class JCloudsContainer implements DeployableContainer<JCloudsConfiguratio
    @Inject @DeploymentScoped
    private InstanceProducer<PooledObject<ConnectedNode>> pooledObject;
    
-   @Override
    public Class<JCloudsConfiguration> getConfigurationClass()
    {
       return JCloudsConfiguration.class;
    }
    
-   @Override
    public ProtocolDescription getDefaultProtocol()
    {
       return new ProtocolDescription("Servlet 3.0");
    }
    
-   @Override
    public void setup(JCloudsConfiguration configuration) 
    {
       long start = System.currentTimeMillis();
@@ -135,7 +132,6 @@ public class JCloudsContainer implements DeployableContainer<JCloudsConfiguratio
       System.out.println("setup: " + (System.currentTimeMillis() - start));
    }
 
-   @Override
    public void start() throws LifecycleException 
    {
       long start = System.currentTimeMillis();
@@ -170,8 +166,7 @@ public class JCloudsContainer implements DeployableContainer<JCloudsConfiguratio
                creator = new CreateNodesOnDemandConnectedNodeCreator(
                      computeContext, 
                      template.get(),
-                     configuration.getGroup())
-                        .setLoginCredentials(credentialsFromConfig(configuration));
+                     configuration.getGroup());
             }
          }
          ObjectPool<ConnectedNode> pool = new ObjectPool<ConnectedNode>(creator, poolSize, usageStrategy);
@@ -190,19 +185,16 @@ public class JCloudsContainer implements DeployableContainer<JCloudsConfiguratio
             Files.toString(new File(config.getCertificate()), Charsets.UTF_8));
    }
 
-   @Override
    public void deploy(Descriptor descriptor) throws DeploymentException
    {
       throw new UnsupportedOperationException("Deploy of Descriptor not supported");
    }
    
-   @Override
    public void undeploy(Descriptor descriptor) throws DeploymentException
    {
       throw new UnsupportedOperationException("UnDeploy of Descriptor not supported");
    }
    
-   @Override
    public ProtocolMetaData deploy(final Archive<?> archive) throws DeploymentException 
    {
       long start = System.currentTimeMillis();
@@ -239,7 +231,6 @@ public class JCloudsContainer implements DeployableContainer<JCloudsConfiguratio
       }
    }
 
-   @Override
    public void undeploy(final Archive<?> archive) throws DeploymentException 
    {
       long start = System.currentTimeMillis();
@@ -261,7 +252,6 @@ public class JCloudsContainer implements DeployableContainer<JCloudsConfiguratio
       System.out.println("undeploy: " + (System.currentTimeMillis() - start) + " " + Thread.currentThread().getName());
    }
 
-   @Override
    public void stop() throws LifecycleException 
    {
       long start = System.currentTimeMillis();

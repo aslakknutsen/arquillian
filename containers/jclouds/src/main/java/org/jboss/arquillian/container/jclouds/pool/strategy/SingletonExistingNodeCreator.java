@@ -16,9 +16,13 @@
  */
 package org.jboss.arquillian.container.jclouds.pool.strategy;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import org.jboss.arquillian.container.jclouds.pool.ConnectedNodeCreator;
 import org.jclouds.compute.ComputeServiceContext;
 import org.jclouds.compute.domain.NodeMetadata;
+import org.jclouds.compute.domain.NodeMetadataBuilder;
+import org.jclouds.domain.Credentials;
 
 /**
  * 
@@ -26,15 +30,29 @@ import org.jclouds.compute.domain.NodeMetadata;
  */
 public class SingletonExistingNodeCreator extends ConnectedNodeCreator {
    private String nodeId;
+   private Credentials credentials;
 
    public SingletonExistingNodeCreator(ComputeServiceContext context, String nodeId) {
       super(context);
       this.nodeId = nodeId;
    }
 
+   /**
+    * @param certificate
+    *           the certificate to set
+    */
+   public ConnectedNodeCreator setLoginCredentials(Credentials credentials) {
+      this.credentials = credentials;
+      return this;
+   }
+
    @Override
    public NodeMetadata createNode() {
-      return getComputeContext().getComputeService().getNodeMetadata(nodeId);
+      return NodeMetadataBuilder
+      .fromNodeMetadata(checkNotNull(
+               getComputeContext().getComputeService().getNodeMetadata(nodeId), "nodeMetadata for %s", nodeId))
+      .credentials(credentials)
+      .build();
    }
 
    @Override

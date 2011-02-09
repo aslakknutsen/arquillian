@@ -81,6 +81,11 @@ public class JCloudsConfiguration implements ContainerConfiguration
    private String imageId;
    
    /**
+    * The ID of the location to start in. 
+    */
+   private String locationId;
+   
+   /**
     * Run against a specific node. 
     */
    private String nodeId = null;
@@ -259,6 +264,22 @@ public class JCloudsConfiguration implements ContainerConfiguration
    public void setImageId(String imageId)
    {
       this.imageId = imageId;
+   }
+   
+   /**
+    * @return the locationId
+    */
+   public String getLocationId()
+   {
+      return locationId;
+   }
+   
+   /**
+    * @param locationId the locationId to set
+    */
+   public void setLocationId(String locationId)
+   {
+      this.locationId = locationId;
    }
    
    /**

@@ -4,28 +4,35 @@
 
 	<container qualifier="aws" default="true">
 		<configuration>
-			<property name="identity">XXX</property>
-			<property name="credential">XXX</property>
+			<property name="identity">XXXXXXX</property>
+			<property name="credential">XXXXXXXX</property>
 
 			<property name="provider">aws-ec2</property>
-			<property name="nodeIdentity">ec2-user</property>
-			<property name="certificate">/home/aslak/.ec2/arquillian</property>
+			<property name="certificate">/Users/adriancole/.ssh/id_rsa</property>
 			<property name="nodeCount">1</property>
 			<property name="group">arquillian</property>
-			
+
+			<property name="mode">BUILD_NODE</property>
+            <!-- speed up resolution by using only amazon amis -->
+            <property name="overrides">jclouds.ec2.ami-owners=137112412989</property>
+            <!-- optionally choose a location near you -->
+            <property name="locationId">eu-west-1</property>
+
 <!-- 
 			<property name="mode">ACTIVE_NODE_POOL</property>
-
-
+            <property name="nodeIdentity">ec2-user</property>
 			<property name="overrides">jclouds.ec2.ami-owners=</property>
 			
 			<property name="mode">ACTIVE_NODE</property>
-			<property name="nodeId">us-east-1/i-afa1cdc3</property>
-			<property name="mode">CONFIGURED_IMAGE</property>
+            <property name="nodeIdentity">ec2-user</property>
+            <property name="overrides">jclouds.ec2.ami-owners=</property>
+            <property name="nodeId">us-east-1/i-afa1cdc3</property>
+			
+            <property name="mode">CONFIGURED_IMAGE</property>
 			<property name="imageId">us-east-1/ami-e2b94d8b</property>
+            <property name="overrides">jclouds.ec2.ami-owners=</property>
 -->
-			<property name="mode">BUILD_NODE</property>
- 			<property name="imageId">us-east-1/ami-74f0061d</property>
+            
  		</configuration>
 	</container>
 

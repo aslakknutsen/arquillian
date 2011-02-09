@@ -41,6 +41,9 @@ public class CreateNodesOnDemandConnectedNodeCreator extends ConnectedNodeCreato
       try {
          return getComputeContext().getComputeService().createNodesInGroup(group, 1, template).iterator().next();
       } catch (RunNodesException e) {
+         for (NodeMetadata node : e.getSuccessfulNodes()){
+            getComputeContext().getComputeService().destroyNode(node.getId());
+         }
          throw new RuntimeException(e);
       }
    }

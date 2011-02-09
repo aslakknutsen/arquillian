@@ -18,13 +18,8 @@ package org.jboss.arquillian.container.jclouds.pool;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-import javax.annotation.Nullable;
-
 import org.jclouds.compute.domain.NodeMetadata;
-import org.jclouds.compute.domain.NodeMetadataBuilder;
-import org.jclouds.domain.Credentials;
 import org.jclouds.ssh.SshClient;
-import org.jclouds.util.CredentialUtils;
 
 import com.google.common.base.Function;
 
@@ -39,11 +34,8 @@ public class ConnectedNode {
    private final NodeMetadata nodeMetadata;
 
    public ConnectedNode(Function<NodeMetadata, SshClient> createSshClientOncePortIsListeningOnNode,
-         NodeMetadata nodeMetadata, @Nullable Credentials overridingLoginCredentials) {
-      this.nodeMetadata = NodeMetadataBuilder
-            .fromNodeMetadata(checkNotNull(nodeMetadata, "nodeMetadata"))
-            .credentials(CredentialUtils.overrideCredentialsIfSupplied(nodeMetadata.getCredentials(), overridingLoginCredentials))
-            .build();
+         NodeMetadata nodeMetadata) {
+      this.nodeMetadata = checkNotNull(nodeMetadata, "nodeMetadata");
       this.sshClient = createSshClientOncePortIsListeningOnNode.apply(nodeMetadata);
    }
 

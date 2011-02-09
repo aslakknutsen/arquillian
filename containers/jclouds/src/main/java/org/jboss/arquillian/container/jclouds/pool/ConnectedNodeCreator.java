@@ -18,7 +18,6 @@ package org.jboss.arquillian.container.jclouds.pool;
 
 import org.jclouds.compute.ComputeServiceContext;
 import org.jclouds.compute.domain.NodeMetadata;
-import org.jclouds.domain.Credentials;
 
 /**
  * A base creator that connects to the node using SSH on create and disconnects on destroy. <br/>
@@ -31,19 +30,8 @@ import org.jclouds.domain.Credentials;
 public abstract class ConnectedNodeCreator implements Creator<ConnectedNode> {
    private ComputeServiceContext computeContext;
 
-   private Credentials credentials;
-
    public ConnectedNodeCreator(ComputeServiceContext computeContext) {
       this.computeContext = computeContext;
-   }
-
-   /**
-    * @param certificate
-    *           the certificate to set
-    */
-   public ConnectedNodeCreator setLoginCredentials(Credentials credentials) {
-      this.credentials = credentials;
-      return this;
    }
 
    /**
@@ -54,7 +42,7 @@ public abstract class ConnectedNodeCreator implements Creator<ConnectedNode> {
    }
 
    public final ConnectedNode create() {
-      ConnectedNode node = new ConnectedNode(computeContext.utils().sshForNode(), createNode(), credentials);
+      ConnectedNode node = new ConnectedNode(computeContext.utils().sshForNode(), createNode());
       node.connect();
       return node;
    }
