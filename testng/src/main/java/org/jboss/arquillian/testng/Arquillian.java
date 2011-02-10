@@ -44,62 +44,69 @@ public abstract class Arquillian implements IHookable
 {
    public static final String ARQUILLIAN_DATA_PROVIDER = "ARQUILLIAN_DATA_PROVIDER";
    
-   private static ThreadLocal<TestRunnerAdaptor> deployableTest = new ThreadLocal<TestRunnerAdaptor>();
+   //private static ThreadLocal<TestRunnerAdaptor> deployableTest = new ThreadLocal<TestRunnerAdaptor>();
+   private static TestRunnerAdaptor deployableTest = null;
 
    @BeforeSuite(alwaysRun = true)
    public void arquillianBeforeSuite() throws Exception
    {
-      if(deployableTest.get() == null)
+      //System.out.println("BeforeSuite on "+ super.getClass().getSimpleName() + " on Thread: " + Thread.currentThread().getName());
+      if(deployableTest == null)
       {
          TestRunnerAdaptor adaptor = DeployableTestBuilder.build();
          adaptor.beforeSuite(); 
-         deployableTest.set(adaptor); // don't set TestRunnerAdaptor if beforeSuite fails
+         deployableTest = adaptor; // don't set TestRunnerAdaptor if beforeSuite fails
       }
    }
 
    @AfterSuite(alwaysRun = true)
    public void arquillianAfterSuite() throws Exception
    {
-      if (deployableTest.get() == null) 
+      //System.out.println("AfterSuite on "+ super.getClass().getSimpleName() + " on Thread: " + Thread.currentThread().getName());
+      if (deployableTest == null) 
       {
          return; // beforeSuite failed
       }
-      deployableTest.get().afterSuite();
-      deployableTest.get().shutdown();
-      deployableTest.set(null);
-      deployableTest.remove();
+      deployableTest.afterSuite();
+      deployableTest.shutdown();
+      deployableTest = null;
    }
 
    @BeforeClass(alwaysRun = true)
    public void arquillianBeforeClass() throws Exception
    {
-      deployableTest.get().beforeClass(getClass(), LifecycleMethodExecutor.NO_OP);
+      //System.out.println("BeforeClass on "+ super.getClass().getSimpleName() + " on Thread: " + Thread.currentThread().getName());
+      deployableTest.beforeClass(getClass(), LifecycleMethodExecutor.NO_OP);
    }
 
    @AfterClass(alwaysRun = true)
    public void arquillianAfterClass() throws Exception
    {
-      deployableTest.get().afterClass(getClass(), LifecycleMethodExecutor.NO_OP);
+      //System.out.println("AfterClass on "+ super.getClass().getSimpleName() + " on Thread: " + Thread.currentThread().getName());
+      deployableTest.afterClass(getClass(), LifecycleMethodExecutor.NO_OP);
    }
    
    @BeforeMethod(alwaysRun = true)
    public void arquillianBeforeTest(Method testMethod) throws Exception 
    {
-      deployableTest.get().before(this, testMethod, LifecycleMethodExecutor.NO_OP);
+      //System.out.println("BeforeTest on "+ super.getClass().getSimpleName() + " on Thread: " + Thread.currentThread().getName());
+      deployableTest.before(this, testMethod, LifecycleMethodExecutor.NO_OP);
    }
 
    @AfterMethod(alwaysRun = true)
    public void arquillianAfterTest(Method testMethod) throws Exception 
    {
-      deployableTest.get().after(this, testMethod, LifecycleMethodExecutor.NO_OP);
+      //System.out.println("AfterTest on "+ super.getClass().getSimpleName() + " on Thread: " + Thread.currentThread().getName());
+      deployableTest.after(this, testMethod, LifecycleMethodExecutor.NO_OP);
    }
 
    public void run(final IHookCallBack callback, final ITestResult testResult)
    {
+      //System.out.println("Test on "+ super.getClass().getSimpleName() + " on Thread: " + Thread.currentThread().getName());
       TestResult result;
       try
       {
-         result = deployableTest.get().test(new TestMethodExecutor()
+         result = deployableTest.test(new TestMethodExecutor()
          {
             public void invoke(Object... parameters) throws Throwable
             {
@@ -169,7 +176,7 @@ public abstract class Arquillian implements IHookable
    {
       Object[][] values = new Object[1][method.getParameterTypes().length];
       
-      if (deployableTest.get() == null)
+      if (deployableTest == null)
       {
          return values;
       }

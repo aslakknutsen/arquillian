@@ -46,6 +46,7 @@ public abstract class AbstractContext<T> implements Context, IdBoundContext<T>
    @Override
    public void activate(T id) 
    {
+      //System.out.println("Activate " + super.getClass().getSimpleName() + " on thread " + Thread.currentThread().getName());
       Validate.notNull(id, "ID must be specified");
       if(!isActive())
       {
@@ -53,13 +54,14 @@ public abstract class AbstractContext<T> implements Context, IdBoundContext<T>
       }
       else
       {
-         log.info("Trying to activate context, but allready active: " + super.getClass().getSimpleName() + " " + id);
+         log.info("Trying to activate context, but allready active: " + super.getClass().getSimpleName() + " " + id + " on thread " + Thread.currentThread().getName());
       }
    }
    
    @Override
    public void deactivate() 
    {
+      //System.out.println("DeActivate " + super.getClass().getSimpleName() + " on thread " + Thread.currentThread().getName());
       if(isActive())
       {
          activeStore.set(null);

@@ -19,6 +19,7 @@ package org.jboss.arquillian.impl;
 import java.lang.reflect.Method;
 
 import org.jboss.arquillian.impl.core.spi.Manager;
+import org.jboss.arquillian.impl.core.spi.context.ApplicationContext;
 import org.jboss.arquillian.impl.core.spi.context.ClassContext;
 import org.jboss.arquillian.impl.core.spi.context.SuiteContext;
 import org.jboss.arquillian.impl.core.spi.context.TestContext;
@@ -53,6 +54,10 @@ public class EventTestRunnerAdaptor implements TestRunnerAdaptor
 
    public void beforeSuite() throws Exception
    {
+      if(!manager.getContext(ApplicationContext.class).isActive())
+      {
+         manager.getContext(ApplicationContext.class).activate();
+      }
       manager.getContext(SuiteContext.class).activate();
       manager.fire(new BeforeSuite());
    }
@@ -72,7 +77,15 @@ public class EventTestRunnerAdaptor implements TestRunnerAdaptor
    public void beforeClass(Class<?> testClass, LifecycleMethodExecutor executor) throws Exception
    {
       Validate.notNull(testClass, "TestClass must be specified");
-      
+
+      if(!manager.getContext(ApplicationContext.class).isActive())
+      {
+         manager.getContext(ApplicationContext.class).activate();
+      }
+      if(!manager.getContext(SuiteContext.class).isActive())
+      {
+         manager.getContext(SuiteContext.class).activate();
+      }
       manager.getContext(ClassContext.class).activate(testClass);
       manager.fire(new BeforeClass(testClass, executor));
    }
@@ -96,6 +109,19 @@ public class EventTestRunnerAdaptor implements TestRunnerAdaptor
       Validate.notNull(testInstance, "TestInstance must be specified");
       Validate.notNull(testMethod, "TestMethod must be specified");
       
+      if(!manager.getContext(ApplicationContext.class).isActive())
+      {
+         manager.getContext(ApplicationContext.class).activate();
+      }
+      if(!manager.getContext(SuiteContext.class).isActive())
+      {
+         manager.getContext(SuiteContext.class).activate();
+      }
+      if(!manager.getContext(ClassContext.class).isActive())
+      {
+         manager.getContext(ClassContext.class).activate(testInstance.getClass());
+      }
+
       manager.getContext(TestContext.class).activate(testInstance);
 
       manager.fire(new Before(testInstance, testMethod, executor));
