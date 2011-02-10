@@ -206,8 +206,7 @@ public class JCloudsContainer implements DeployableContainer<JCloudsConfiguratio
       long start = System.currentTimeMillis();
       ConnectedNodePool nodeOverview = this.connectedNodePool.get();
 
-      // grab a instance from the pool and add it to the Context so undeploy can get the same
-      // instance.
+      // grab a instance from the pool and add it to the Context so undeploy can get the same instance.
       PooledObject<ConnectedNode> pooledMetadata = nodeOverview.getNode();
       this.pooledObject.set(pooledMetadata);
 
@@ -216,7 +215,6 @@ public class JCloudsContainer implements DeployableContainer<JCloudsConfiguratio
 
       try 
       {
-         Thread.currentThread().sleep(random.nextInt(1000));
          this.cloudDeployer.get().deploy(connectedNodeMetadata.getSshClient(), archive);
       } 
       catch (Exception e) 
