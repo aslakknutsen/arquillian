@@ -26,13 +26,14 @@ import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
+
 /**
  * JCloudsIntegrationTestCase
  *
  * @author <a href="mailto:aslak@redhat.com">Aslak Knutsen</a>
  * @version $Revision: $
  */
-public class JCloudsIntegrationTestBase extends Arquillian
+public class JCloudsIntegrationTestCase07 extends Arquillian
 {
    @Deployment
    public static JavaArchive createDeployment() 

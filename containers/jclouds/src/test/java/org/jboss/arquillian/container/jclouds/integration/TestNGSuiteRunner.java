@@ -43,11 +43,11 @@ public class TestNGSuiteRunner
       runner.setVerbose(2);
       runner.setXmlSuites(
             Arrays.asList(createSuite(
-                  JCloudsIntegrationTestCase1.class,
-                  JCloudsIntegrationTestCase2.class,
-                  JCloudsIntegrationTestCase3.class,
-                  JCloudsIntegrationTestCase4.class,
-                  JCloudsIntegrationTestCase5.class
+                  JCloudsIntegrationTestCase01.class,
+                  JCloudsIntegrationTestCase02.class,
+                  JCloudsIntegrationTestCase03.class,
+                  JCloudsIntegrationTestCase04.class,
+                  JCloudsIntegrationTestCase05.class
                   )));
    
       runner.run();
@@ -59,7 +59,7 @@ public class TestNGSuiteRunner
       suite.setName("Arquillian");
       suite.setAnnotations(AnnotationTypeEnum.JDK.getName());
       suite.setParallel("classes");
-      suite.setThreadCount(5);
+      suite.setThreadCount(2);
       XmlTest test = new XmlTest(suite);
       test.setName("Arquillian - Test");
       List<XmlClass> testClasses = new ArrayList<XmlClass>();

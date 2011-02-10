@@ -1,10 +1,28 @@
 <!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd" >
 
-<suite name="Suite1" verbose="1" parallel="classes" thread-count="2">
+<suite name="Suite1" verbose="1" parallel="classes" thread-count="3">
 	<test name="MultiThreadedClasses">
 		<classes>
-			<class name="org.jboss.arquillian.container.jclouds.integration.JCloudsIntegrationTestCase1" />
-			<class name="org.jboss.arquillian.container.jclouds.integration.JCloudsIntegrationTestCase2" />
+			<class name="org.jboss.arquillian.container.jclouds.integration.JCloudsIntegrationTestCase01" />
+			<class name="org.jboss.arquillian.container.jclouds.integration.JCloudsIntegrationTestCase02" />
+			<class name="org.jboss.arquillian.container.jclouds.integration.JCloudsIntegrationTestCase03" />
+			<class name="org.jboss.arquillian.container.jclouds.integration.JCloudsIntegrationTestCase04" />
+			<class name="org.jboss.arquillian.container.jclouds.integration.JCloudsIntegrationTestCase05" />
+			<class name="org.jboss.arquillian.container.jclouds.integration.JCloudsIntegrationTestCase06" />
+			<class name="org.jboss.arquillian.container.jclouds.integration.JCloudsIntegrationTestCase07" />
+			<class name="org.jboss.arquillian.container.jclouds.integration.JCloudsIntegrationTestCase08" />
+			<class name="org.jboss.arquillian.container.jclouds.integration.JCloudsIntegrationTestCase09" />
+			<class name="org.jboss.arquillian.container.jclouds.integration.JCloudsIntegrationTestCase10" />
+			<class name="org.jboss.arquillian.container.jclouds.integration.JCloudsIntegrationTestCase11" />
+			<class name="org.jboss.arquillian.container.jclouds.integration.JCloudsIntegrationTestCase12" />
+			<class name="org.jboss.arquillian.container.jclouds.integration.JCloudsIntegrationTestCase13" />
+			<class name="org.jboss.arquillian.container.jclouds.integration.JCloudsIntegrationTestCase14" />
+			<class name="org.jboss.arquillian.container.jclouds.integration.JCloudsIntegrationTestCase15" />
+			<class name="org.jboss.arquillian.container.jclouds.integration.JCloudsIntegrationTestCase16" />
+			<class name="org.jboss.arquillian.container.jclouds.integration.JCloudsIntegrationTestCase17" />
+			<class name="org.jboss.arquillian.container.jclouds.integration.JCloudsIntegrationTestCase18" />
+			<class name="org.jboss.arquillian.container.jclouds.integration.JCloudsIntegrationTestCase19" />
+			<class name="org.jboss.arquillian.container.jclouds.integration.JCloudsIntegrationTestCase20" />
 		</classes>
 	</test>
 </suite>

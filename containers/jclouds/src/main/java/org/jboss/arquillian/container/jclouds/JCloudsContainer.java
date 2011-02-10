@@ -18,6 +18,7 @@ package org.jboss.arquillian.container.jclouds;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Random;
 
 import org.jboss.arquillian.container.jclouds.jboss.JBossASCloudDeployer;
 import org.jboss.arquillian.container.jclouds.pool.ConnectedNode;
@@ -31,12 +32,15 @@ import org.jboss.arquillian.container.jclouds.pool.strategy.ExistingPoolConnecte
 import org.jboss.arquillian.container.jclouds.pool.strategy.SingletonExistingNodeCreator;
 import org.jboss.arquillian.container.jclouds.spi.CloudDeployer;
 import org.jboss.arquillian.container.jclouds.spi.TemplateCreator;
+import org.jboss.arquillian.protocol.servlet.ServletMethodExecutor;
 import org.jboss.arquillian.spi.ServiceLoader;
 import org.jboss.arquillian.spi.client.container.DeployableContainer;
 import org.jboss.arquillian.spi.client.container.DeploymentException;
 import org.jboss.arquillian.spi.client.container.LifecycleException;
 import org.jboss.arquillian.spi.client.protocol.ProtocolDescription;
+import org.jboss.arquillian.spi.client.protocol.metadata.HTTPContext;
 import org.jboss.arquillian.spi.client.protocol.metadata.ProtocolMetaData;
+import org.jboss.arquillian.spi.client.protocol.metadata.Servlet;
 import org.jboss.arquillian.spi.core.Instance;
 import org.jboss.arquillian.spi.core.InstanceProducer;
 import org.jboss.arquillian.spi.core.annotation.ContainerScoped;
@@ -66,6 +70,8 @@ import com.google.common.io.Files;
 public class JCloudsContainer implements DeployableContainer<JCloudsConfiguration> 
 {
    private JCloudsConfiguration configuration;
+   
+   private Random random = new Random();
    
    @Inject 
    private Instance<ServiceLoader> serviceLoader;
@@ -210,6 +216,7 @@ public class JCloudsContainer implements DeployableContainer<JCloudsConfiguratio
 
       try 
       {
+         Thread.currentThread().sleep(random.nextInt(1000));
          this.cloudDeployer.get().deploy(connectedNodeMetadata.getSshClient(), archive);
       } 
       catch (Exception e) 
@@ -222,8 +229,11 @@ public class JCloudsContainer implements DeployableContainer<JCloudsConfiguratio
       {
          String publicAddress = nodeMetadata.getPublicAddresses().iterator().next();
 
-         //return new ServletMethodExecutor(new URL("http", publicAddress, config.getRemoteServerHttpPort(), "/"));
-         return new ProtocolMetaData();
+         // TODO: we can't hardcode this..
+         return new ProtocolMetaData()
+            .addContext(
+                  new HTTPContext(publicAddress, configuration.getRemoteServerHttpPort())
+                     .add(new Servlet(ServletMethodExecutor.ARQUILLIAN_SERVLET_NAME, "/test")));
       } 
       catch (Exception e) 
       {
