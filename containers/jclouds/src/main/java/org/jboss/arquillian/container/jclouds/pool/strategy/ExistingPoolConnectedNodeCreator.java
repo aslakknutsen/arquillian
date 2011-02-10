@@ -16,6 +16,8 @@
  */
 package org.jboss.arquillian.container.jclouds.pool.strategy;
 
+import java.util.Iterator;
+
 import org.jboss.arquillian.container.jclouds.pool.ConnectedNodeCreator;
 import org.jboss.arquillian.container.jclouds.pool.Creator;
 import org.jclouds.compute.ComputeServiceContext;
@@ -36,7 +38,7 @@ import com.google.common.collect.Iterables;
 public class ExistingPoolConnectedNodeCreator extends ConnectedNodeCreator {
    private String group;
 
-   private Iterable<? extends NodeMetadata> foundNodes;
+   private Iterator<? extends NodeMetadata> foundNodes;
    private Credentials credentials;
 
    public ExistingPoolConnectedNodeCreator(ComputeServiceContext context, String group) {
@@ -72,13 +74,13 @@ public class ExistingPoolConnectedNodeCreator extends ConnectedNodeCreator {
                                
                             }
                                 
-                                );
+                                ).iterator();
          }
-         if (Iterables.size(foundNodes) >0) {
-            return Iterables.get(foundNodes,0);
-         } else {
-            throw new RuntimeException("Requested more nodes in pool then found in cloud");
-         }
+      }
+      if (foundNodes.hasNext()) {
+         return foundNodes.next();
+      } else {
+         throw new RuntimeException("Requested more nodes in pool then found in cloud");
       }
    }
 
