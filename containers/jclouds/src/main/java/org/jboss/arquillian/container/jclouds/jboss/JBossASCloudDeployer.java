@@ -39,11 +39,11 @@ public class JBossASCloudDeployer implements CloudDeployer
       long start = System.currentTimeMillis();
       Payload toSend = Payloads.newInputStreamPayload(archive.as(ZipExporter.class).exportAsInputStream());
       client.put(archive.getName(), toSend);
-      System.out.println("upload: " + (System.currentTimeMillis() - start));
+      //System.out.println("upload: " + (System.currentTimeMillis() - start));
       
       start = System.currentTimeMillis();
       client.exec("/usr/local/jboss/bin/twiddle.sh invoke 'jboss.system:service=MainDeployer' deploy file://`pwd`/" + archive.getName());
-      System.out.println("deploy file: " + (System.currentTimeMillis() - start));
+      //System.out.println("deploy file: " + (System.currentTimeMillis() - start));
    }
 
    /* (non-Javadoc)
