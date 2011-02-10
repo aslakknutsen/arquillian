@@ -58,11 +58,11 @@ public class RunScriptData {
                         installJavaAndCurl(os),//
                         authorizePortInIpTables(8080),//
                         extractTargzIntoDirectory(URI.create(System.getProperty("test.jboss-url",
-                                 "http://d19xvfg065k8li.cloudfront.net/jboss-6.0.0.Final.tar.gz")), "/usr/local"),//
+                                 "http://d3rdbh0ysvqra3.cloudfront.net/jboss-default-6.0.0.Final.tar.gz")), "/usr/local"),//
                         exec("{md} " + jbossHome), exec("mv /usr/local/jboss-*/* " + jbossHome),//
                         exec("chmod -R oug+r+w " + jbossHome)),//
                ImmutableList
-                        .<Statement> of(interpret("java -Xms128m -Xmx512m -XX:MaxPermSize=256m -Dorg.jboss.resolver.warning=true -Dsun.rmi.dgc.client.gcInterval=3600000 -Dsun.rmi.dgc.server.gcInterval=3600000 -Djava.endorsed.dirs=lib/endorsed -classpath bin/run.jar org.jboss.Main -c jbossweb-standalone -b 0.0.0.0")));
+                        .<Statement> of(interpret("java -Xms128m -Xmx512m -XX:MaxPermSize=256m -Dorg.jboss.resolver.warning=true -Dsun.rmi.dgc.client.gcInterval=3600000 -Dsun.rmi.dgc.server.gcInterval=3600000 -Djava.endorsed.dirs=lib/endorsed -classpath bin/run.jar org.jboss.Main -c default -b 0.0.0.0")));
       return toReturn;
    }
 
