@@ -103,8 +103,18 @@ public class ObjectPool<T> {
    protected void createNewObject() {
       FutureTask<T> futureTask = new FutureTask<T>(new Callable<T>() {
          public T call() throws Exception {
-            T object = creator.create();
-            addToPool(object);
+            T object = null;
+            try
+            {
+               object = creator.create();
+               addToPool(object);
+            }
+            catch (Exception e) 
+            {
+               e.printStackTrace();
+               throw e;
+            }
+            
             return object;
          }
       });
